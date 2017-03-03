@@ -1,12 +1,7 @@
-# Open vStorage integration tests
-Open vStorage automated integration tests.
+# Open vStorage automation lib
+Contains a whole suite of helper methods that wrap around the OVS API
 
-Theses tests are written in Python.
-
-## Wiki
-
-The wiki with more information and how to use, edit, test and contribute your own autotests can be found [here](https://github.com/openvstorage/integrationtests/wiki).
 
 ## Issue tracker
 
-The public issue tracker can be found [here](https://github.com/openvstorage/integrationtests/issues)
+The public issue tracker can be found [here](https://github.com/openvstorage/automation-lib/issues)
