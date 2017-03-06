@@ -13,8 +13,6 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-import time
-
 from ovs.dal.lists.storagerouterlist import StorageRouterList
 from ovs.dal.hybrids.storagerouter import StorageRouter
 from ovs.extensions.generic.system import System

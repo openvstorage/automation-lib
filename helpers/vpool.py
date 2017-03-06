@@ -16,7 +16,7 @@
 
 from ovs.log.log_handler import LogHandler
 from ovs.dal.lists.vpoollist import VPoolList
-from helpers.exceptions import VPoolNotFoundError
+from ..helpers.exceptions import VPoolNotFoundError
 
 
 class VPoolHelper(object):

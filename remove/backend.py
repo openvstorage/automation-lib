@@ -14,9 +14,9 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.log.log_handler import LogHandler
-from helpers.backend import BackendHelper
-from helpers.albanode import AlbaNodeHelper
-from validate.decorators import required_backend, required_preset
+from ..helpers.albanode import AlbaNodeHelper
+from ..helpers.backend import BackendHelper
+from ..validate.decorators import required_backend, required_preset
 
 
 class BackendRemover(object):

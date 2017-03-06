@@ -15,10 +15,10 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.log.log_handler import LogHandler
-from helpers.domain import DomainHelper
-from helpers.backend import BackendHelper
-from validate.decorators import required_backend
-from helpers.storagerouter import StoragerouterHelper
+from ..helpers.backend import BackendHelper
+from ..helpers.domain import DomainHelper
+from ..helpers.storagerouter import StoragerouterHelper
+from ..validate.decorators import required_backend
 
 
 class DomainSetup(object):

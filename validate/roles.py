@@ -13,9 +13,8 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-
-from ci.helpers.disk import DiskHelper
 from ovs.log.log_handler import LogHandler
+from ..helpers.disk import DiskHelper
 
 
 class RoleValidation(object):

@@ -17,7 +17,7 @@
 from ovs.log.log_handler import LogHandler
 from ovs.extensions.generic.system import System
 from ovs.extensions.generic.sshclient import SSHClient
-from helpers.init_manager import InitManager, InitManagerSupported
+from ..helpers.init_manager import InitManager, InitManagerSupported
 
 
 class SystemHelper(object):
@@ -33,7 +33,6 @@ class SystemHelper(object):
     def get_non_running_ovs_services(storagerouter_ip):
         """
         get all non-running ovs services
-
         :param storagerouter_ip: ip address of a existing storagerouter
         :type storagerouter_ip: str
         :return: list of non running ovs services

@@ -15,8 +15,8 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.log.log_handler import LogHandler
-from validate.decorators import check_role_on_disk
-from helpers.storagerouter import StoragerouterHelper
+from ..helpers.storagerouter import StoragerouterHelper
+from ..validate.decorators import check_role_on_disk
 
 
 class RoleSetup(object):

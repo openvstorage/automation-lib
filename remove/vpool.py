@@ -14,9 +14,9 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from helpers.vpool import VPoolHelper
 from ovs.log.log_handler import LogHandler
-from helpers.storagerouter import StoragerouterHelper
+from ..helpers.storagerouter import StoragerouterHelper
+from ..helpers.vpool import VPoolHelper
 
 
 class VPoolRemover(object):

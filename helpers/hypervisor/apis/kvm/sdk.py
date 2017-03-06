@@ -22,12 +22,13 @@ import re
 import glob
 import uuid
 import libvirt
-from helpers.hypervisor.apis.kvm.option_mapping import SdkOptionMapping
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
 from ovs.log.log_handler import LogHandler
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
+# Relative
+from option_mapping import SdkOptionMapping
 
 logger = LogHandler.get('helpers', name='kvm sdk')
 ROOT_PATH = '/etc/libvirt/qemu/'  # Get static info from here, or use dom.XMLDesc(0)

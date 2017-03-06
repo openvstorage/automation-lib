@@ -14,10 +14,10 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
-from helpers.init_manager import InitManager
-from helpers.storagerouter import StoragerouterHelper
 from ovs.extensions.generic.configuration import Configuration
+from ovs.log.log_handler import LogHandler
+from ..helpers.init_manager import InitManager
+from ..helpers.storagerouter import StoragerouterHelper
 
 
 class CelerySetup(object):
@@ -32,7 +32,6 @@ class CelerySetup(object):
     def override_scheduletasks(configuration):
         """
         Override the scheduled tasks crontab with your own confguration
-
         :param configuration: configuration to override scheduled tasks
         :type configuration: dict
         :return:
@@ -49,6 +48,5 @@ class CelerySetup(object):
             CelerySetup.LOGGER.info("Successfully restarted all `{0}` services!".format(service_name))
             return True
         else:
-            CelerySetup.LOGGER.warning("`{0}` config is `{1}` but should be `{2}`"
-                                       .format(CelerySetup.SCHEDULED_TASK_CFG, fetched_cfg, configuration))
+            CelerySetup.LOGGER.warning("`{0}` config is `{1}` but should be `{2}`".format(CelerySetup.SCHEDULED_TASK_CFG, fetched_cfg, configuration))
             return False

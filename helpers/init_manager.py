@@ -13,12 +13,11 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-
 import time
 import subprocess
-from ovs.log.log_handler import LogHandler
 from ovs.extensions.generic.sshclient import SSHClient
-from helpers.exceptions import UnsupportedInitManager
+from ovs.log.log_handler import LogHandler
+from ..helpers.exceptions import UnsupportedInitManager
 
 
 class InitManagerSupported(object):

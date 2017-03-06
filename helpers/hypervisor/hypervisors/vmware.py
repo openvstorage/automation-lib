@@ -16,7 +16,7 @@
 Module for the VMware hypervisor client
 """
 
-from helpers.hypervisor.apis.vmware.sdk import Sdk
+from ..apis.vmware.sdk import Sdk
 
 
 class VMware(object):

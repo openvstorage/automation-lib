@@ -15,9 +15,9 @@
 # but WITHOUT ANY WARRANTY of any kind.
 import time
 from ovs.log.log_handler import LogHandler
-from helpers.backend import BackendHelper
-from helpers.albanode import AlbaNodeHelper
-from validate.decorators import required_roles, required_backend, required_preset, check_backend, check_preset, \
+from ..helpers.albanode import AlbaNodeHelper
+from ..helpers.backend import BackendHelper
+from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_preset, \
     check_linked_backend, filter_osds
 
 

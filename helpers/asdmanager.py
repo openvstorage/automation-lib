@@ -24,6 +24,7 @@ import inspect
 import logging
 import requests
 from ovs.log.log_handler import LogHandler
+
 try:
     from requests.packages.urllib3 import disable_warnings
 except ImportError:

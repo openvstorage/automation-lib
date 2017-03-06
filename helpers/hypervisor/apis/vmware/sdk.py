@@ -20,7 +20,6 @@ from time import sleep
 import re
 import os
 import shutil
-
 from suds.client import Client, WebFault
 from suds.cache import ObjectCache
 from suds.sudsobject import Property

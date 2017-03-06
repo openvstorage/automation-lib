@@ -15,9 +15,9 @@
 # but WITHOUT ANY WARRANTY of any kind.
 from subprocess import check_output
 from ovs.log.log_handler import LogHandler
-from helpers.fstab import FstabHelper
-from helpers.storagerouter import StoragerouterHelper
-from setup.roles import RoleSetup
+from ..helpers.fstab import FstabHelper
+from ..helpers.storagerouter import StoragerouterHelper
+from ..setup.roles import RoleSetup
 
 
 class RoleRemover(object):

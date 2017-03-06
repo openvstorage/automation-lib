@@ -13,10 +13,9 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-
-from helpers.storagerouter import StoragerouterHelper
-from helpers.storagedriver import StoragedriverHelper
 from ovs.log.log_handler import LogHandler
+from ..helpers.storagerouter import StoragerouterHelper
+from ..helpers.storagedriver import StoragedriverHelper
 
 
 class VPoolValidation(object):

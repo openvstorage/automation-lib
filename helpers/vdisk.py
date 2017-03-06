@@ -17,7 +17,7 @@
 from ovs.dal.hybrids.vdisk import VDisk
 from ovs.dal.lists.vdisklist import VDiskList
 from ovs.dal.lists.vpoollist import VPoolList
-from helpers.exceptions import VPoolNotFoundError, VDiskNotFoundError
+from ..helpers.exceptions import VPoolNotFoundError, VDiskNotFoundError
 
 
 class VDiskHelper(object):

@@ -15,8 +15,8 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.dal.lists.disklist import DiskList
-from helpers.storagerouter import StoragerouterHelper
 from ovs.dal.lists.diskpartitionlist import DiskPartitionList
+from ..helpers.storagerouter import StoragerouterHelper
 
 
 class DiskHelper(object):

@@ -13,14 +13,10 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-
-import json
-import requests
-from requests.auth import HTTPBasicAuth
-from ovs.log.log_handler import LogHandler
 from ovs.dal.hybrids.albanode import AlbaNode
 from ovs.dal.lists.albanodelist import AlbaNodeList
-from helpers.asdmanager import ASDManagerClient
+from ovs.log.log_handler import LogHandler
+from ..helpers.asdmanager import ASDManagerClient
 
 
 class AlbaNodeHelper(object):

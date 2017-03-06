@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.log.log_handler import LogHandler
-from validate.decorators import required_vdisk
+from ..validate.decorators import required_vdisk
 
 
 class VDiskValidation(object):

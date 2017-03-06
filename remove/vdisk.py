@@ -14,11 +14,11 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from helpers.vdisk import VDiskHelper
+from ovs.dal.exceptions import ObjectNotFoundException
 from ovs.lib.vdisk import VDiskController
 from ovs.log.log_handler import LogHandler
-from ovs.dal.exceptions import ObjectNotFoundException
-from validate.decorators import required_vtemplate
+from ..helpers.vdisk import VDiskHelper
+from ..validate.decorators import required_vtemplate
 
 
 class VDiskRemover(object):

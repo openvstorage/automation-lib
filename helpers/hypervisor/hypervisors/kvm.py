@@ -16,7 +16,7 @@
 Module for the KVM hypervisor client
 """
 
-from helpers.hypervisor.apis.kvm.sdk import Sdk
+from ..apis.kvm.sdk import Sdk
 
 
 class KVM(object):
