@@ -68,7 +68,7 @@ class BackendRemover(object):
                         for asd_id, asd_info in local_stack['local_stack'][alba_node_id][disk_path]['asds'].iteritems():
                             BackendRemover.LOGGER.info('Removing asd {0} for disk {1}'.format(asd_id, local_stack['local_stack'][alba_node_id][disk_path]['guid']))
                             asd_safety = BackendHelper.get_asd_safety(albabackend_guid=albabackend_guid, asd_id=asd_id, api=api)
-                            BackendRemover._remove_asd(alba_node_guid=alba_node_guid,asd_id=asd_id, asd_safety=asd_safety, api=api)
+                            BackendRemover._remove_asd(alba_node_guid=alba_node_guid, asd_id=asd_id, asd_safety=asd_safety, api=api)
 
         # Restarting iteration to avoid too many local stack calls:
         local_stack = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name,
@@ -182,6 +182,8 @@ class BackendRemover(object):
 
         :param preset_name: the name of a existing preset on existing backend
         :type preset_name: str
+        :param albabackend_name: name of the albabackend
+        :type albabackend_name: str
         :param api: specify a valid api connection to the setup
         :type api: helpers.api.OVSClient
         :param timeout: max. time to wait for a task to complete

@@ -52,7 +52,7 @@ class FstabHelper(file):
             self._path = path
         else:
             self._path = self.DEFAULT_PATH
-        file.__init__(self, self._path, 'r+')
+        file.__init__(self._path, 'r+')
 
     @staticmethod
     def _hydrate_entry(line):
@@ -115,6 +115,7 @@ class FstabHelper(file):
         lines = self.readlines()
 
         found = False
+        line = None
         for index, line in enumerate(lines):
             if not line.startswith("#"):
                 if self._hydrate_entry(line) == entry:
@@ -123,8 +124,8 @@ class FstabHelper(file):
 
         if not found:
             return False
-
-        lines.remove(line)
+        if line is not None:
+            lines.remove(line)
 
         self.seek(0)
         self.write(''.join(lines))
@@ -149,7 +150,8 @@ class FstabHelper(file):
         :param mountpoint: point where the device is mounted eg /mnt/sda
         :param filesystem: type of filesystem eg ext4
         :param options: extra options eg 'defaults'
-        :param path:
+        :param dump: filesystems needs to be dumped or not
+        :param pass_: order to check filesystem at reboot time
         :return:
         """
         return self.add_entry(FstabHelper.Entry(device, mountpoint, filesystem, options, dump))

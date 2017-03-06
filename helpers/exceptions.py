@@ -82,13 +82,6 @@ class VDiskNotFoundError(Exception):
     pass
 
 
-class VPoolNotFoundError(Exception):
-    """
-    Raised when an object was queries that doesn't exist
-    """
-    pass
-
-
 class ImageConvertError(Exception):
     """
     Raised when an object was queries that doesn't exist

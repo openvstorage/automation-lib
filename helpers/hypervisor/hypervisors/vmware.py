@@ -59,6 +59,7 @@ class VMware(object):
         @param name: name of the virtual machine
         @param disks: list of disk information
         @param wait: wait for action to complete
+        @param mountpoint: mountpoint for the vm
         """
         _ = mountpoint
         task = self.sdk.clone_vm(vmid, name, disks, wait)
@@ -74,6 +75,10 @@ class VMware(object):
 
         @param vmid: hypervisor id of the virtual machine
         @param wait: wait for action to complete
+        @param storagedriver_mountpoint: mountpoint of the storagedriver
+        @param storagedriver_storage_ip: ip of the storagedriver
+        @param devicename: name of the device to delete
+        @param disks_info: info of all disks
         """
         if disks_info is None:
             disks_info = []
@@ -120,8 +125,9 @@ class VMware(object):
         Configure a vm as template
         This lets the machine exist on the hypervisor but configures
         all disks as "Independent Non-persistent"
-
+        @param wait: wait for action to complete
         @param vmid: hypervisor id of the virtual machine
+        @param disks: disks to include in the template
         """
         return self.sdk.set_disk_mode(vmid, disks, 'independent_nonpersistent', wait)
 

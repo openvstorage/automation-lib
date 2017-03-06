@@ -91,7 +91,7 @@ class OVSClient(object):
         headers = {'Accept': 'application/json',
                    'Authorization': 'No Auth'}
         raw_response = requests.post(url='{0}/oauth2/token/'.format(self._url),
-                                     data={'grant_type': 'password', 'username':self.username, 'password': self.password},
+                                     data={'grant_type': 'password', 'username': self.username, 'password': self.password},
                                      headers=headers,
                                      verify=self._verify)
 
@@ -271,6 +271,6 @@ class OVSClient(object):
         """
         try:
             json_object = json.loads(str(dict_or_json))
-        except ValueError, e:
+        except ValueError:
             return json.dumps(dict_or_json)
         return json_object

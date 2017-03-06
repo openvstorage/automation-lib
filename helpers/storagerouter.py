@@ -169,6 +169,8 @@ class StoragerouterHelper(object):
         :type guid: str
         :param ip: ip of the storagerouter
         :type ip: str
+        :param timeout: timeout time in seconds
+        :type timeout: int
         :return:
         """
         storagerouter_guid = guid

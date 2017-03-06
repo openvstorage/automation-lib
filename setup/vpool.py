@@ -47,6 +47,8 @@ class VPoolSetup(object):
         :type timeout: int
         :param api: specify a valid api connection to the setup
         :type api: helpers.api.OVSClient
+        :param storagerouter_ip: ip of the storagerouter to add the vpool too
+        :type storagerouter_ip: str
         :param albabackend_name: name(s) of backend(s). Used to validate the backend
         :type albabackend_name: str or list
         :param proxy_amount: amount of proxies for this vpool

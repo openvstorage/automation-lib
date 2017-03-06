@@ -57,6 +57,8 @@ class BackendValidation(object):
 
         :param preset_name: name of a preset
         :type preset_name: str
+        :param albabackend_name: name of the albabackend
+        :type albabackend_name: str
         :param policies: policies that should match with fetched preset
         :type policies: list
         :return: do given policies match with fetched preset

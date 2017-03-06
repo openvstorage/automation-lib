@@ -64,7 +64,8 @@ class ValueExtender(MessagePlugin):
     Plugin for SUDS for compatibility with VMware SDK
     """
 
-    def addAttributeForValue(self, node):
+    @staticmethod
+    def add_attribute_for_value(node):
         """
         Adds an attribute to a given node
         """
@@ -75,7 +76,7 @@ class ValueExtender(MessagePlugin):
         """
         Hook up the plugin
         """
-        context.envelope.walk(self.addAttributeForValue)
+        context.envelope.walk(self.add_attribute_for_value)
 
 
 class Sdk(object):
@@ -704,6 +705,7 @@ class Sdk(object):
         """
         @param ip : hypervisor ip to query for datastore presence
         @param mountpoint: nfs mountpoint on hypervisor
+        @param host: host of the vm
         @rtype: sdk datastore object
         @return: object when found else None
         """

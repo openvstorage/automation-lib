@@ -309,6 +309,7 @@ class Sdk(object):
         """
         Get the machine power state
         :param vmid: vm identifier
+        :param readable: return human readable
         :return power state of the vm
         """
         if not isinstance(vmid, libvirt.virDomain):
@@ -507,7 +508,7 @@ class Sdk(object):
                 raise AssertionError("Name {0} is currently in use by another VM.".format(name))
             except AssertionError as ex:
                 raise RuntimeError(str(ex))
-            except libvirt.libvirtError as ex:
+            except libvirt.libvirtError:
                 return name
         else:
             if tries == 0:
@@ -517,7 +518,7 @@ class Sdk(object):
             try:
                 self._conn.lookupByName(name)
                 return self._generate_vm_clone_name(name, False, tries + 1)
-            except libvirt.libvirtError as ex:
+            except libvirt.libvirtError:
                 return name
 
     @staticmethod
@@ -595,7 +596,7 @@ class Sdk(object):
                 raise RuntimeError('Virtual Machine with id/name {} could not be found.'.format(name))
 
     def create_vm(self, name, vcpus, ram, disks, cdrom_iso=None, os_type=None, os_variant=None, vnc_listen='0.0.0.0',
-                  networks=None, start=False, autostart=False, ovs_vm=True, edge_port=26203, hostname=None, wait=False):
+                  networks=None, start=False, autostart=False, ovs_vm=True, edge_port=26203, hostname=None):
         """
         Creates a VM
         @TODO use Edge instead of fuse for disks
@@ -605,6 +606,10 @@ class Sdk(object):
         :param disks: list of dicts : options see SdkOptionsMapping
         when using existing storage, size can be removed
         :param cdrom_iso: path to the iso the mount
+        :param autostart: start vm when the hypervisor starts
+        :param ovs_vm: virtual machine setup for ovs
+        :param edge_port: port of the edge - when ovs vm is true
+        :param hostname: host of the volumes - when ovs vm is true
         :param os_type: type of os
         :param os_variant: variant of the os
         :param vnc_listen:
@@ -618,7 +623,7 @@ class Sdk(object):
             raise AssertionError("Name {0} is currently in use by another VM.".format(name))
         except AssertionError as ex:
             raise RuntimeError(str(ex))
-        except libvirt.libvirtError as ex:
+        except libvirt.libvirtError:
             pass
 
         if ovs_vm is True and (hostname is None or edge_port is None):
@@ -629,7 +634,7 @@ class Sdk(object):
                    "--name {}".format(name),
                    "--vcpus {}".format(vcpus),
                    "--ram {}".format(ram),
-                   "--graphics vnc,listen={0}".format(vnc_listen), # Have to specify 0.0.0.0 else it will listen on 127.0.0.1 only
+                   "--graphics vnc,listen={0}".format(vnc_listen),  # Have to specify 0.0.0.0 else it will listen on 127.0.0.1 only
                    "--noautoconsole"]
 
         for disk in disks:
@@ -732,7 +737,7 @@ class Sdk(object):
                         opts[config['option']] = value
                     else:
                         raise ValueError(
-                            'Value does not match. Expected {0} and got {1} for option {2}'.format(config['type'], type(value),key))
+                            'Value does not match. Expected {0} and got {1} for option {2}'.format(config['type'], type(value), key))
         # Generate options to append to the command
         for key, value in opts.iteritems():
             cmd.append("{1}={2}".format(command, key, value))
@@ -767,6 +772,7 @@ class Sdk(object):
         """
         Returns the IP given by the network lease
         :param vmid: identifier of the vm to migrate (name or id)
+        :param source: source to base off from
         :return: a list with all ip addresses
         """
         if not isinstance(vmid, libvirt.virDomain):
@@ -784,6 +790,7 @@ class Sdk(object):
         Creates a snapshot for a VM with a specfic name
         :param vmid: identifier of the vm to migrate (name or id)
         :param snapshot_name: name of the snapshot
+        :param flags: extra flags supplied
         :return:
         """
         if not isinstance(vmid, libvirt.virDomain):
@@ -798,6 +805,7 @@ class Sdk(object):
         Reverts to a specific snapshot
         :param vmid: identifier of the vm to migrate (name or id)
         :param snapshot_name: name of the snapshot
+        :param flags: extra flags supplied
         :return:
         """
         if not isinstance(vmid, libvirt.virDomain):
