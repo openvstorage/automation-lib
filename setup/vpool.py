@@ -14,12 +14,12 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
-from helpers.backend import BackendHelper
-from helpers.storagerouter import StoragerouterHelper
-from helpers.storagedriver import StoragedriverHelper
 from ovs.lib.generic import GenericController
-from validate.decorators import required_roles, required_backend, check_vpool
+from ovs.log.log_handler import LogHandler
+from ..helpers.backend import BackendHelper
+from ..helpers.storagerouter import StoragerouterHelper
+from ..helpers.storagedriver import StoragedriverHelper
+from ..validate.decorators import required_roles, required_backend, check_vpool
 
 
 class VPoolSetup(object):
