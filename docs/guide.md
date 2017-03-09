@@ -1,4 +1,4 @@
-# How-to use the automated setup.json
+# How-to use the automated library
 
 ## Description
 
