@@ -1,5 +1,5 @@
 # Open vStorage automation lib
-Contains a whole suite of helper methods that wrap around the OVS API
+This repository contains the automation library for Open vStorage. This library delegates component creation/removal to the REST API of Open vStorage through Python code.
 
 
 ## Issue tracker
