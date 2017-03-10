@@ -33,6 +33,16 @@ class StoragerouterHelper(object):
         pass
 
     @staticmethod
+    def get_storagerouter_by_guid(storagerouter_guid):
+        """
+        :param storagerouter_guid: guid of a storagerouter
+        :type storagerouter_guid: str
+        :return: storagerouter guid
+        :rtype: ovs.dal.hybrids.storagerouter.StorageRouter
+        """
+        return StorageRouter(storagerouter_guid)
+
+    @staticmethod
     def get_storagerouter_guid_by_ip(storagerouter_ip):
         """
 
