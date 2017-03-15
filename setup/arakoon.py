@@ -83,7 +83,7 @@ class ArakoonSetup(object):
     @staticmethod
     @required_arakoon_cluster
     def extend_arakoon(cluster_name, master_storagerouter_ip, storagerouter_ip, cluster_basedir,
-                       service_type=ServiceType.ARAKOON_CLUSTER_TYPES.FWK, clustered_nodes=[]):
+                       service_type=ServiceType.ARAKOON_CLUSTER_TYPES.FWK, clustered_nodes=None):
         """
         Adds a external arakoon to a storagerouter
 
@@ -108,6 +108,8 @@ class ArakoonSetup(object):
         :return: is created or not
         :rtype: bool
         """
+        if clustered_nodes is None:
+            clustered_nodes = []
         client = SSHClient(storagerouter_ip, username='root')
 
         # create required directories
@@ -129,7 +131,7 @@ class ArakoonSetup(object):
             ArakoonSetup.LOGGER.info("Finished restarting all given nodes of arakoon: {0}".format(clustered_nodes, cluster_name))
 
         ArakoonSetup.LOGGER.info("Finished extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`"
-                                 .format(cluster_name, master_storagerouter_ip,storagerouter_ip, cluster_basedir))
+                                 .format(cluster_name, master_storagerouter_ip, storagerouter_ip, cluster_basedir))
 
     @staticmethod
     @required_backend
