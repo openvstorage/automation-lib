@@ -70,7 +70,8 @@ class ArakoonSetup(object):
             raise RuntimeError("Incompatible Arakoon cluster type selected: {0}".format(service_type))
 
         ArakoonSetup.LOGGER.info("Starting creation of new arakoon cluster with name `{0}`, servicetype `{1}`, ip `{2}`, base_dir `{3}`".format(cluster_name, service_type, storagerouter_ip, cluster_basedir))
-        info = ArakoonInstaller.create_cluster(cluster_name=cluster_name, cluster_type=service_type, ip=storagerouter_ip, base_dir=cluster_basedir, plugins=plugins, locked=False, internal=False)
+        info = ArakoonInstaller.create_cluster(cluster_name=cluster_name, cluster_type=service_type, ip=storagerouter_ip,
+                                               base_dir=cluster_basedir, plugins=plugins, locked=False, internal=False)
         if service_type == ServiceType.ARAKOON_CLUSTER_TYPES.ABM:
             client.run(['ln', '-s', '/usr/lib/alba/albamgr_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
         elif service_type == ServiceType.ARAKOON_CLUSTER_TYPES.NSM:
@@ -113,7 +114,8 @@ class ArakoonSetup(object):
         if not client.dir_exists(cluster_basedir):
             client.dir_create(cluster_basedir)
 
-        ArakoonSetup.LOGGER.info("Starting extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`".format(cluster_name, master_storagerouter_ip, storagerouter_ip, cluster_basedir))
+        ArakoonSetup.LOGGER.info("Starting extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`"
+                                 .format(cluster_name, master_storagerouter_ip, storagerouter_ip, cluster_basedir))
         ArakoonInstaller.extend_cluster(new_ip=storagerouter_ip, cluster_name=cluster_name, base_dir=cluster_basedir, locked=False)
         if service_type == ServiceType.ARAKOON_CLUSTER_TYPES.ABM:
             client.run(['ln', '-s', '/usr/lib/alba/albamgr_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
@@ -122,25 +124,23 @@ class ArakoonSetup(object):
 
         # checking if we need to restart the given nodes
         if len(clustered_nodes) != 0:
-            ArakoonSetup.LOGGER.info("Trying to restart all given nodes of arakoon: {0}"
-                                     .format(clustered_nodes, cluster_name))
+            ArakoonSetup.LOGGER.info("Trying to restart all given nodes of arakoon: {0}".format(clustered_nodes, cluster_name))
             ArakoonInstaller.restart_cluster_add(cluster_name=cluster_name, current_ips=clustered_nodes, new_ip=storagerouter_ip)
             ArakoonSetup.LOGGER.info("Finished restarting all given nodes of arakoon: {0}".format(clustered_nodes, cluster_name))
 
-        ArakoonSetup.LOGGER.info("Finished extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`".format(cluster_name, master_storagerouter_ip, storagerouter_ip, cluster_basedir))
+        ArakoonSetup.LOGGER.info("Finished extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`"
+                                 .format(cluster_name, master_storagerouter_ip,storagerouter_ip, cluster_basedir))
 
     @staticmethod
     @required_backend
     def checkup_nsm_hosts(albabackend_name, amount):
         """
         Checkup the NSM hosts for a certain alba backend
-
         :param albabackend_name: name of a existing alba backend
         :type albabackend_name: str
         :param amount: amount of min. NSM hosts for a certain backend
         :type amount: int
         :return:
         """
-
         alba_backend_guid = BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
         return AlbaController.nsm_checkup(backend_guid=alba_backend_guid, min_nsms=int(amount))
