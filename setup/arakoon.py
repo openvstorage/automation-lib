@@ -69,9 +69,7 @@ class ArakoonSetup(object):
         else:
             raise RuntimeError("Incompatible Arakoon cluster type selected: {0}".format(service_type))
 
-        ArakoonSetup.LOGGER.info("Starting creation of new arakoon cluster with name `{0}`, servicetype `{1}`,"
-                                 " ip `{2}`, base_dir `{3}`".format(cluster_name, service_type, storagerouter_ip,
-                                                                    cluster_basedir))
+        ArakoonSetup.LOGGER.info("Starting creation of new arakoon cluster with name `{0}`, servicetype `{1}`, ip `{2}`, base_dir `{3}`".format(cluster_name, service_type, storagerouter_ip, cluster_basedir))
         info = ArakoonInstaller.create_cluster(cluster_name=cluster_name, cluster_type=service_type, ip=storagerouter_ip,
                                                base_dir=cluster_basedir, plugins=plugins, locked=False, internal=False)
         if service_type == ServiceType.ARAKOON_CLUSTER_TYPES.ABM:
@@ -80,14 +78,12 @@ class ArakoonSetup(object):
             client.run(['ln', '-s', '/usr/lib/alba/nsm_host_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
         ArakoonInstaller.start_cluster(metadata=info['metadata'])
         ArakoonInstaller.unclaim_cluster(cluster_name=cluster_name)
-        ArakoonSetup.LOGGER.info("Finished creation of new arakoon cluster with name `{0}`, servicetype `{1}`,"
-                                 " ip `{2}`, base_dir `{3}`".format(cluster_name, service_type, storagerouter_ip,
-                                                                    cluster_basedir))
+        ArakoonSetup.LOGGER.info("Finished creation of new arakoon cluster with name `{0}`, servicetype `{1}`, ip `{2}`, base_dir `{3}`".format(cluster_name, service_type, storagerouter_ip, cluster_basedir))
 
     @staticmethod
     @required_arakoon_cluster
     def extend_arakoon(cluster_name, master_storagerouter_ip, storagerouter_ip, cluster_basedir,
-                       service_type=ServiceType.ARAKOON_CLUSTER_TYPES.FWK, clustered_nodes=None):
+                       service_type=ServiceType.ARAKOON_CLUSTER_TYPES.FWK, clustered_nodes=[]):
         """
         Adds a external arakoon to a storagerouter
 
@@ -112,17 +108,14 @@ class ArakoonSetup(object):
         :return: is created or not
         :rtype: bool
         """
-        if clustered_nodes is None:
-            clustered_nodes = []
         client = SSHClient(storagerouter_ip, username='root')
 
         # create required directories
         if not client.dir_exists(cluster_basedir):
             client.dir_create(cluster_basedir)
 
-        ArakoonSetup.LOGGER.info("Starting extending arakoon cluster with name `{0}`, master_ip `{1}`,"
-                                 " slave_ip `{2}`, base_dir `{3}`".format(cluster_name, master_storagerouter_ip,
-                                                                          storagerouter_ip, cluster_basedir))
+        ArakoonSetup.LOGGER.info("Starting extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`"
+                                 .format(cluster_name, master_storagerouter_ip, storagerouter_ip, cluster_basedir))
         ArakoonInstaller.extend_cluster(new_ip=storagerouter_ip, cluster_name=cluster_name, base_dir=cluster_basedir, locked=False)
         if service_type == ServiceType.ARAKOON_CLUSTER_TYPES.ABM:
             client.run(['ln', '-s', '/usr/lib/alba/albamgr_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
