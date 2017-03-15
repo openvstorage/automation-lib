@@ -1,6 +1,5 @@
 # Open vStorage automation lib
 This repository contains the automation library for Open vStorage. This library delegates component creation/removal to the REST API of Open vStorage through Python code.
-This suite covers all Fargo API.
 
 ## Issue tracker
 
