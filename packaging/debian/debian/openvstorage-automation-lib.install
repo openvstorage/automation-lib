@@ -1,4 +1,5 @@
-helpers     opt/OpenvStorage/ci/api-lib/
-setup       opt/OpenvStorage/ci/api-lib/
-remove      opt/OpenvStorage/ci/api-lib/
-validate    opt/OpenvStorage/ci/api-lib/
+helpers     opt/OpenvStorage/ci/api_lib/
+setup       opt/OpenvStorage/ci/api_lib/
+remove      opt/OpenvStorage/ci/api_lib/
+validate    opt/OpenvStorage/ci/api_lib/
+__init__.py opt/OpenvStorage/ci/api_lib/__init__.py
