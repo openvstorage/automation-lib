@@ -2,7 +2,7 @@
     "package_name": "openvstorage-automation-lib",
     "product_name": "Open vStorage - Automation-Library",
     "tags": ["community", "enterprise"],
-    "source_contents": "--transform 's,^,{0}-{1}/,' helpers remove setup validate *.txt",
+    "source_contents": "--transform 's,^,{0}-{1}/,' helpers remove setup validate __init__.py *.txt",
     "version": {
         "major": 0,
         "minor": 1

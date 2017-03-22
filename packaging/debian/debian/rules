@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-automation-lib:
+openvstorage-automation-lib:
 	dh_testdir
 	dh_testroot
 	dh_installdirs  -p$@
@@ -18,8 +18,8 @@ automation-lib:
 	dh_builddeb  -p$@
 
 clean:
-	if [ -f debian/automation-lib ]; then rm debian/automation-lib; fi
+	if [ -f debian/openvstorage-automation-lib ]; then rm debian/openvstorage-automation-lib; fi
 
-binary: automation-lib
+binary: openvstorage-automation-lib
 
 .PHONY: clean build
