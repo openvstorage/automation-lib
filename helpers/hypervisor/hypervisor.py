@@ -41,10 +41,10 @@ class HypervisorFactory(object):
                     if hvtype == 'VMWARE':
                         # Not yet tested. Needs to be rewritten
                         raise NotImplementedError("{0} has not yet been implemented".format(hvtype))
-                        from helpers.hypervisor.hypervisors.vmware import VMware
+                        from .hypervisors.vmware import VMware
                         hypervisor = VMware(ip, username, password)
                     elif hvtype == 'KVM':
-                        from helpers.hypervisor.hypervisors.kvm import KVM
+                        from .hypervisors.kvm import KVM
                         hypervisor = KVM(ip, username, password)
                     else:
                         raise NotImplementedError('Hypervisor {0} is not yet supported'.format(hvtype))
