@@ -805,7 +805,8 @@ class Sdk(object):
         """
         if not isinstance(vmid, libvirt.virDomain):
             vmid = self.get_vm_object(vmid)
-        vmid.revertToSnapshot(snapshot_name, flags)
+        snapshot = vmid.snapshotLookupByName(snapshot_name)
+        vmid.revertToSnapshot(snapshot, flags)
 
     @staticmethod
     def shell_safe(argument):
