@@ -96,5 +96,4 @@ class DiskHelper(object):
                     roles_on_disk.append(role)
             return roles_on_disk
         else:
-            raise RuntimeError("Disk with name `{0}` not found on storagerouter `{1}`".format(disk_name,
-                                                                                              storagerouter_ip))
+            raise RuntimeError("Disk with name `{0}` not found on storagerouter `{1}`".format(disk_name, storagerouter_ip))
