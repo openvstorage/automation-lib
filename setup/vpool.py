@@ -104,7 +104,7 @@ class VPoolSetup(object):
         try:
             task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
             if not task_result[0]:
-                error_msg = 'vPool `{0}` has failed to create on storagerouter `{1}`'.format(vpool_name, storagerouter_ip)
+                error_msg = 'vPool {0} has failed to create on storagerouter {1} because: {2}'.format(vpool_name, storagerouter_ip, task_result[1])
                 VPoolSetup.LOGGER.error(error_msg)
                 raise RuntimeError(error_msg)
             else:
@@ -112,8 +112,7 @@ class VPoolSetup(object):
                                        .format(vpool_name, storagerouter_ip))
                 return storagerouter_ip, '/mnt/{0}'.format(vpool_name)
         except RuntimeError:
-            VPoolSetup.LOGGER.warning('Creation of vPool `{0}` has timed out on storagerouter `{1}`, '
-                                      'checking if vPool is present in model ...'
+            VPoolSetup.LOGGER.warning('Creation of vPool `{0}` has timed out on storagerouter `{1}`, checking if vPool is present in model ...'
                                       .format(vpool_name, storagerouter_ip))
             # get details to check the model
             machine_id = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).machine_id
