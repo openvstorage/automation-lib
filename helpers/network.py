@@ -14,12 +14,16 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import re
+import socket
+from ovs.extensions.generic.remote import remote
+from ovs.log.log_handler import LogHandler
 
 
 class NetworkHelper(object):
     """
     NetworkHelper class
     """
+    LOGGER = LogHandler.get(source="helpers", name="ci_network_helper")
 
     def __init__(self):
         pass
@@ -29,3 +33,27 @@ class NetworkHelper(object):
         pattern = re.compile(r"^(?<!\S)((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\b|\.\b){7}(?!\S)$")
         if not pattern.match(ip):
             raise ValueError('Not a valid IP address')
+
+    @staticmethod
+    def get_free_port(listener_ip, logger=LOGGER):
+        """
+        Returns a free port
+        :param listener_ip: ip to listen on
+        :type listener_ip: str
+        :param logger: logging instance
+        :type logger: ovs.log.log_handler.LogHandler
+        :return: port number
+        :rtype: int
+        """
+        with remote(listener_ip, [socket]) as rem:
+            listening_socket = rem.socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                # Bind to first available port
+                listening_socket.bind(('', 0))
+                port = listening_socket.getsockname()[1]
+                return port
+            except socket.error as ex:
+                logger.error('Could not bind the socket. Got {0}'.format(str(ex)))
+                raise
+            finally:
+                listening_socket.close()
