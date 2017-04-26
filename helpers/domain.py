@@ -114,6 +114,5 @@ class DomainHelper(object):
         :rtype: list
         """
 
-        return [storagedriver for storagedriver in StorageDriverList.get_storagedrivers()
-                if domain_guid in storagedriver.storagerouter.regular_domains]
+        return [storagedriver for storagedriver in StorageDriverList.get_storagedrivers() if domain_guid in storagedriver.storagerouter.regular_domains]
 

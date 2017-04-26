@@ -20,7 +20,6 @@ from ovs.log.log_handler import LogHandler
 from ..helpers.exceptions import UnsupportedInitManager
 
 
-
 class InitManagerSupported(object):
 
     INIT = "init"
