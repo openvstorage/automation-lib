@@ -83,11 +83,8 @@ class VPoolSetup(object):
 
         # Setting possible alba accelerated alba
         if vpool_details['fragment_cache']['location'] == 'backend':
-            backend_info_aa = {
-                'alba_backend_guid':
-                BackendHelper.get_albabackend_by_name(vpool_details['fragment_cache']['backend']['name']).guid,
-                'preset': vpool_details['fragment_cache']['backend']['preset']
-            }
+            backend_info_aa = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['fragment_cache']['backend']['name']).guid,
+                               'preset': vpool_details['fragment_cache']['backend']['preset']}
             connection_info_aa = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
             call_parameters['call_parameters']['backend_info_aa'] = backend_info_aa
             call_parameters['call_parameters']['connection_info_aa'] = connection_info_aa
@@ -98,21 +95,20 @@ class VPoolSetup(object):
             VPoolSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
 
-        if vpool_details['block_cache']['location'] == 'backend':
-            backend_info_bc = {
-                'alba_backend_guid':
-                BackendHelper.get_albabackend_by_name(vpool_details['block_cache']['backend']['name']).guid,
-                'preset': vpool_details['block_cache']['backend']['preset']
-            }
-            connection_info_bc = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
-            call_parameters['call_parameters']['backend_info_bc'] = backend_info_bc
-            call_parameters['call_parameters']['connection_info_bc'] = connection_info_bc
-        elif vpool_details['fragment_cache']['location'] == 'disk':
-            pass
-        else:
-            error_msg = 'Wrong `block_cache->location` in vPool configuration, it should be `disk` or `backend`'
-            VPoolSetup.LOGGER.error(error_msg)
-            raise RuntimeError(error_msg)
+        # Optional param
+        if vpool_details.get('block_cache') is not None:
+            if vpool_details['block_cache']['location'] == 'backend':
+                backend_info_bc = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['block_cache']['backend']['name']).guid,
+                                   'preset': vpool_details['block_cache']['backend']['preset']}
+                connection_info_bc = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
+                call_parameters['call_parameters']['backend_info_bc'] = backend_info_bc
+                call_parameters['call_parameters']['connection_info_bc'] = connection_info_bc
+            elif vpool_details['block_cache']['location'] == 'disk':  # Ignore disk
+                pass
+            else:
+                error_msg = 'Wrong `block_cache->location` in vPool configuration, it should be `disk` or `backend`'
+                VPoolSetup.LOGGER.error(error_msg)
+                raise RuntimeError(error_msg)
 
         task_guid = api.post(
             api='/storagerouters/{0}/add_vpool/'.format(
