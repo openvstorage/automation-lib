@@ -68,6 +68,8 @@ class VPoolSetup(object):
                 'storage_ip': vpool_details['storage_ip'],
                 'storagerouter_ip': storagerouter_ip,
                 'writecache_size': int(vpool_details['storagedriver']['global_write_buffer']),
+                'block_cache_on_read': vpool_details['block_cache']['strategy']['cache_on_read'],
+                'block_cache_on_write': vpool_details['block_cache']['strategy']['cache_on_write'],
                 'fragment_cache_on_read': vpool_details['fragment_cache']['strategy']['cache_on_read'],
                 'fragment_cache_on_write': vpool_details['fragment_cache']['strategy']['cache_on_write'],
                 'config_params': {'dtl_mode': vpool_details['storagedriver']['dtl_mode'],
@@ -93,6 +95,22 @@ class VPoolSetup(object):
             pass
         else:
             error_msg = 'Wrong `fragment_cache->location` in vPool configuration, it should be `disk` or `backend`'
+            VPoolSetup.LOGGER.error(error_msg)
+            raise RuntimeError(error_msg)
+
+        if vpool_details['block_cache']['location'] == 'backend':
+            backend_info_bc = {
+                'alba_backend_guid':
+                BackendHelper.get_albabackend_by_name(vpool_details['block_cache']['backend']['name']).guid,
+                'preset': vpool_details['block_cache']['backend']['preset']
+            }
+            connection_info_bc = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
+            call_parameters['call_parameters']['backend_info_bc'] = backend_info_bc
+            call_parameters['call_parameters']['connection_info_bc'] = connection_info_bc
+        elif vpool_details['fragment_cache']['location'] == 'disk':
+            pass
+        else:
+            error_msg = 'Wrong `block_cache->location` in vPool configuration, it should be `disk` or `backend`'
             VPoolSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
 
