@@ -59,33 +59,29 @@ class VPoolSetup(object):
 
         # Build ADD_VPOOL parameters
         call_parameters = {
-            'call_parameters': {
-                'vpool_name': vpool_name,
-                'backend_info': {'alba_backend_guid':
-                                 BackendHelper.get_albabackend_by_name(vpool_details['backend_name']).guid,
-                                 'preset': vpool_details['preset']},
-                'connection_info': {'host': '', 'port': '', 'client_id': '', 'client_secret': ''},
-                'storage_ip': vpool_details['storage_ip'],
-                'storagerouter_ip': storagerouter_ip,
-                'writecache_size': int(vpool_details['storagedriver']['global_write_buffer']),
-                'fragment_cache_on_read': vpool_details['fragment_cache']['strategy']['cache_on_read'],
-                'fragment_cache_on_write': vpool_details['fragment_cache']['strategy']['cache_on_write'],
-                'config_params': {'dtl_mode': vpool_details['storagedriver']['dtl_mode'],
-                                  'sco_size': int(vpool_details['storagedriver']['sco_size']),
-                                  'cluster_size': int(vpool_details['storagedriver']['cluster_size']),
-                                  'write_buffer': int(vpool_details['storagedriver']['volume_write_buffer']),
-                                  'dtl_transport': vpool_details['storagedriver']['dtl_transport']},
-                'parallelism': {'proxies': proxy_amount}
-            }
+            'vpool_name': vpool_name,
+            'backend_info': {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['backend_name']).guid,
+                             'preset': vpool_details['preset']},
+            'connection_info': {'host': '', 'port': '', 'client_id': '', 'client_secret': ''},
+            'storage_ip': vpool_details['storage_ip'],
+            'storagerouter_ip': storagerouter_ip,
+            'writecache_size': int(vpool_details['storagedriver']['global_write_buffer']),
+            'fragment_cache_on_read': vpool_details['fragment_cache']['strategy']['cache_on_read'],
+            'fragment_cache_on_write': vpool_details['fragment_cache']['strategy']['cache_on_write'],
+            'config_params': {'dtl_mode': vpool_details['storagedriver']['dtl_mode'],
+                              'sco_size': int(vpool_details['storagedriver']['sco_size']),
+                              'cluster_size': int(vpool_details['storagedriver']['cluster_size']),
+                              'write_buffer': int(vpool_details['storagedriver']['volume_write_buffer']),
+                              'dtl_transport': vpool_details['storagedriver']['dtl_transport']},
+            'parallelism': {'proxies': proxy_amount}
         }
-
+        api_data = {'call_parameters': call_parameters}
+        
         # Setting possible alba accelerated alba
         if vpool_details['fragment_cache']['location'] == 'backend':
-            backend_info_aa = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['fragment_cache']['backend']['name']).guid,
-                               'preset': vpool_details['fragment_cache']['backend']['preset']}
-            connection_info_aa = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
-            call_parameters['call_parameters']['backend_info_aa'] = backend_info_aa
-            call_parameters['call_parameters']['connection_info_aa'] = connection_info_aa
+            call_parameters['backend_info_aa'] = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['fragment_cache']['backend']['name']).guid,
+                                                  'preset': vpool_details['fragment_cache']['backend']['preset']}
+            call_parameters['connection_info_aa'] = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
         elif vpool_details['fragment_cache']['location'] == 'disk':
             pass
         else:
@@ -95,12 +91,12 @@ class VPoolSetup(object):
 
         # Optional param - required for unstable at the moment
         if vpool_details.get('block_cache') is not None:
+            call_parameters['block_cache_on_read'] = vpool_details['block_cache']['strategy']['cache_on_read']
+            call_parameters['block_cache_on_write'] = vpool_details['block_cache']['strategy']['cache_on_write']
             if vpool_details['block_cache']['location'] == 'backend':
-                backend_info_bc = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['block_cache']['backend']['name']).guid,
-                                   'preset': vpool_details['block_cache']['backend']['preset']}
-                connection_info_bc = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
-                call_parameters['call_parameters']['backend_info_bc'] = backend_info_bc
-                call_parameters['call_parameters']['connection_info_bc'] = connection_info_bc
+                call_parameters['backend_info_bc'] = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['block_cache']['backend']['name']).guid,
+                                                      'preset': vpool_details['block_cache']['backend']['preset']}
+                call_parameters['connection_info_bc'] = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
             elif vpool_details['block_cache']['location'] == 'disk':  # Ignore disk
                 pass
             else:
@@ -112,10 +108,11 @@ class VPoolSetup(object):
             call_parameters['block_cache_on_read'] = False
             call_parameters['block_cache_on_write'] = False
 
+        print api_data
         task_guid = api.post(
             api='/storagerouters/{0}/add_vpool/'.format(
                     StoragerouterHelper.get_storagerouter_guid_by_ip(storagerouter_ip)),
-            data=call_parameters
+            data=api_data
         )
         task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
         if not task_result[0]:
