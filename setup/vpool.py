@@ -101,8 +101,7 @@ class VPoolSetup(object):
                 error_msg = 'Wrong `block_cache->location` in vPool configuration, it should be `disk` or `backend`'
                 VPoolSetup.LOGGER.error(error_msg)
                 raise RuntimeError(error_msg)
-
-        print api_data
+        
         task_guid = api.post(
             api='/storagerouters/{0}/add_vpool/'.format(
                     StoragerouterHelper.get_storagerouter_guid_by_ip(storagerouter_ip)),
