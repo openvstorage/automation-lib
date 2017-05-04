@@ -107,8 +107,7 @@ class VPoolSetup(object):
         else:
             call_parameters['block_cache_on_read'] = False
             call_parameters['block_cache_on_write'] = False
-
-        print api_data
+            
         task_guid = api.post(
             api='/storagerouters/{0}/add_vpool/'.format(
                     StoragerouterHelper.get_storagerouter_guid_by_ip(storagerouter_ip)),
