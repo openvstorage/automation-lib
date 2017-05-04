@@ -17,6 +17,7 @@
 from ovs.log.log_handler import LogHandler
 from ovs.extensions.generic.system import System
 from ovs.extensions.generic.sshclient import SSHClient
+from ovs.extensions.packages.package import PackageManager
 from ..helpers.init_manager import InitManager, InitManagerSupported
 
 
@@ -39,7 +40,6 @@ class SystemHelper(object):
         :rtype: list
         """
         client = SSHClient(storagerouter_ip, username='root')
-
         if InitManager.INIT_MANAGER == InitManagerSupported.INIT:
             ovs_services = [service for service in client.dir_list(InitManager.UPSTART_BASEDIR) if 'ovs-' in service]
             return [ovs_service.split('.')[0] for ovs_service in ovs_services
@@ -70,22 +70,36 @@ class SystemHelper(object):
     def get_local_storagerouter():
         """
         Fetches the details of a local storagerouter
-
         :return: a StorageRouter
         :rtype: ovs.dal.hybrids.storagerouter.StorageRouter
         """
-
         return System.get_my_storagerouter()
+
+    @staticmethod
+    def get_ovs_version(client):
+        """
+        Gets the installed ovs version
+        :param client: Sshclient instance
+        :type client: ovs.extensions.generic.sshclient.SSHClient
+        :return: ovs version identifier. Either ee or ose
+        :rtype: str
+        """
+        # @todo replace with storagerouter.features instead
+        # Version mapping with identifier
+        mapping = {'ee': 'volumedriver-ee-base',
+                   'ose': 'volumedriver-no-dedup-base'}
+        installed_versions = PackageManager.get_installed_versions(client=client)
+        for ovs_version, detection_key in mapping.iteritems():
+            if detection_key in installed_versions:
+                return ovs_version
 
     @staticmethod
     def upper_case_first_letter(x):
         """
         Upper case the first letter of a string
-
         :param x: a normal string
         :type x: str
         :return: a normal string with the first letter uppercases
         :rtype: str
         """
-
         return x[0].upper() + x[1:]

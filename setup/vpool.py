@@ -68,8 +68,6 @@ class VPoolSetup(object):
                 'storage_ip': vpool_details['storage_ip'],
                 'storagerouter_ip': storagerouter_ip,
                 'writecache_size': int(vpool_details['storagedriver']['global_write_buffer']),
-                'block_cache_on_read': vpool_details['block_cache']['strategy']['cache_on_read'],
-                'block_cache_on_write': vpool_details['block_cache']['strategy']['cache_on_write'],
                 'fragment_cache_on_read': vpool_details['fragment_cache']['strategy']['cache_on_read'],
                 'fragment_cache_on_write': vpool_details['fragment_cache']['strategy']['cache_on_write'],
                 'config_params': {'dtl_mode': vpool_details['storagedriver']['dtl_mode'],
@@ -95,7 +93,7 @@ class VPoolSetup(object):
             VPoolSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
 
-        # Optional param
+        # Optional param - required for unstable at the moment
         if vpool_details.get('block_cache') is not None:
             if vpool_details['block_cache']['location'] == 'backend':
                 backend_info_bc = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['block_cache']['backend']['name']).guid,
@@ -106,9 +104,13 @@ class VPoolSetup(object):
             elif vpool_details['block_cache']['location'] == 'disk':  # Ignore disk
                 pass
             else:
+                # @ Todo has to be removed for development version
                 error_msg = 'Wrong `block_cache->location` in vPool configuration, it should be `disk` or `backend`'
                 VPoolSetup.LOGGER.error(error_msg)
                 raise RuntimeError(error_msg)
+        else:
+            call_parameters['block_cache_on_read'] = False
+            call_parameters['block_cache_on_write'] = False
 
         task_guid = api.post(
             api='/storagerouters/{0}/add_vpool/'.format(
