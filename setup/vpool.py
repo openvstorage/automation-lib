@@ -34,7 +34,7 @@ class VPoolSetup(object):
     @staticmethod
     @check_vpool
     @required_roles(REQUIRED_VPOOL_ROLES, 'LOCAL')
-    def add_vpool(vpool_name, vpool_details, api, storagerouter_ip, proxy_amount=2, timeout=ADD_VPOOL_TIMEOUT):
+    def add_vpool(vpool_name, vpool_details, api, storagerouter_ip, proxy_amount=2, timeout=ADD_VPOOL_TIMEOUT, *args, **kwargs):
         """
         Adds a VPool to a storagerouter
 
