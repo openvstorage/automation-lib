@@ -26,16 +26,15 @@ class VPoolSetup(object):
 
     LOGGER = LogHandler.get(source='setup', name='ci_vpool_setup')
     ADD_VPOOL_TIMEOUT = 500
-    REQUIRED_VPOOL_ROLES = ['DB', 'WRITE']
+    REQUIRED_VPOOL_ROLES = ['DB', 'WRITE', 'DTL']
 
     def __init__(self):
         pass
 
     @staticmethod
     @check_vpool
-    @required_backend
     @required_roles(REQUIRED_VPOOL_ROLES, 'LOCAL')
-    def add_vpool(vpool_name, vpool_details, api, storagerouter_ip, albabackend_name, proxy_amount=2, timeout=ADD_VPOOL_TIMEOUT):
+    def add_vpool(vpool_name, vpool_details, api, storagerouter_ip, proxy_amount=2, timeout=ADD_VPOOL_TIMEOUT):
         """
         Adds a VPool to a storagerouter
 
@@ -49,8 +48,6 @@ class VPoolSetup(object):
         :type api: helpers.api.OVSClient
         :param storagerouter_ip: ip of the storagerouter to add the vpool too
         :type storagerouter_ip: str
-        :param albabackend_name: name(s) of backend(s). Used to validate the backend
-        :type albabackend_name: str or list
         :param proxy_amount: amount of proxies for this vpool
         :type proxy_amount: int
         :return: (storagerouter_ip, vpool_mountpoint)
@@ -89,7 +86,7 @@ class VPoolSetup(object):
             VPoolSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
 
-        # Optional param - required for unstable at the moment
+        # Optional param
         if vpool_details.get('block_cache') is not None:
             call_parameters['block_cache_on_read'] = vpool_details['block_cache']['strategy']['cache_on_read']
             call_parameters['block_cache_on_write'] = vpool_details['block_cache']['strategy']['cache_on_write']
@@ -104,10 +101,7 @@ class VPoolSetup(object):
                 error_msg = 'Wrong `block_cache->location` in vPool configuration, it should be `disk` or `backend`'
                 VPoolSetup.LOGGER.error(error_msg)
                 raise RuntimeError(error_msg)
-        else:
-            call_parameters['block_cache_on_read'] = False
-            call_parameters['block_cache_on_write'] = False
-            
+        
         task_guid = api.post(
             api='/storagerouters/{0}/add_vpool/'.format(
                     StoragerouterHelper.get_storagerouter_guid_by_ip(storagerouter_ip)),

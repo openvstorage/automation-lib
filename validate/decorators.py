@@ -178,8 +178,7 @@ def required_vtemplate(func):
     def validate(*args, **kwargs):
         # check if preset exists or not on existing alba backend
         if kwargs['vpool_name'] and kwargs['vdisk_name']:
-            if not VDiskHelper.get_vdisk_by_name(vdisk_name=kwargs['vdisk_name'], vpool_name=kwargs['vpool_name'])\
-                    .is_vtemplate:
+            if not VDiskHelper.get_vdisk_by_name(vdisk_name=kwargs['vdisk_name'], vpool_name=kwargs['vpool_name']).is_vtemplate:
                 error_msg = "Given vDisk `{0}` on vPool `{1}` is not a vTemplate".format(kwargs['vdisk_name'],
                                                                                          kwargs['vpool_name'])
                 LOGGER.error(error_msg)
