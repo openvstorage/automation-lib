@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.log.log_handler import LogHandler
-from ovs.extensions.db.arakoon.ArakoonInstaller import ArakoonInstaller
+from ovs.extensions.db.arakoon.arakooninstaller import ArakoonInstaller
 from ..validate.decorators import required_arakoon_cluster
 
 
