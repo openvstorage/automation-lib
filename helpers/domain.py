@@ -13,6 +13,7 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
+from ovs.dal.hybrids.domain import Domain
 from ovs.dal.lists.domainlist import DomainList
 from ovs.dal.lists.storagedriverlist import StorageDriverList
 
@@ -48,7 +49,6 @@ class DomainHelper(object):
         :return: domain object
         :rtype: ovs.dal.hybrids.domain.Domain
         """
-
         for domain in DomainList.get_domains():
             if domain.name == domain_name:
                 return domain
@@ -63,10 +63,7 @@ class DomainHelper(object):
         :return: domain object
         :rtype: ovs.dal.hybrids.domain.Domain
         """
-
-        for domain in DomainList.get_domains():
-            if domain.guid == domain_guid:
-                return domain
+        return Domain(domain_guid)
 
     @staticmethod
     def get_domain_guids():
@@ -87,7 +84,6 @@ class DomainHelper(object):
         :return: list with ovs.dal.hybrids.domain.Domain objects
         :rtype: list
         """
-
         return DomainList.get_domains()
 
     @staticmethod
@@ -100,8 +96,7 @@ class DomainHelper(object):
         :return: list of storagerouter guids
         :rtype: list
         """
-
-        return DomainHelper.get_domain_by_guid(domain_guid=domain_guid)['storage_router_layout']['regular']
+        return DomainHelper.get_domain_by_guid(domain_guid=domain_guid).storage_router_layout['regular']
 
     @staticmethod
     def get_storagedrivers_in_same_domain(domain_guid):
@@ -113,6 +108,5 @@ class DomainHelper(object):
         :return: list of storagerouter guids
         :rtype: list
         """
-
         return [storagedriver for storagedriver in StorageDriverList.get_storagedrivers() if domain_guid in storagedriver.storagerouter.regular_domains]
 

@@ -64,3 +64,12 @@ class StoragedriverHelper(object):
         :rtype: ovs.dal.hybrids.storagedriver.STORAGEDRIVER
         """
         return StorageDriverList.get_by_storagedriver_id(storagedriver_id)
+
+    @staticmethod
+    def get_storagedrivers():
+        """
+        Fetches all storagedrivers
+        :return: list of all storagedrivers
+        :rtype: (ovs.dal.hybrids.storagedriver.STORAGEDRIVER)
+        """
+        return StorageDriverList.get_storagedrivers()
