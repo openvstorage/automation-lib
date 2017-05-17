@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.dal.hybrids.servicetype import ServiceType
-from ovs.extensions.db.arakoon.ArakoonInstaller import ArakoonInstaller
+from ovs.extensions.db.arakoon.arakooninstaller import ArakoonInstaller
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.lib.alba import AlbaController
 from ovs.log.log_handler import LogHandler
@@ -127,7 +127,7 @@ class ArakoonSetup(object):
         # checking if we need to restart the given nodes
         if len(clustered_nodes) != 0:
             ArakoonSetup.LOGGER.info("Trying to restart all given nodes of arakoon: {0}".format(clustered_nodes, cluster_name))
-            ArakoonInstaller.restart_cluster_add(cluster_name=cluster_name, current_ips=clustered_nodes, new_ip=storagerouter_ip)
+            ArakoonInstaller.restart_cluster_after_extending(cluster_name=cluster_name, new_ip=storagerouter_ip)
             ArakoonSetup.LOGGER.info("Finished restarting all given nodes of arakoon: {0}".format(clustered_nodes, cluster_name))
 
         ArakoonSetup.LOGGER.info("Finished extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`"

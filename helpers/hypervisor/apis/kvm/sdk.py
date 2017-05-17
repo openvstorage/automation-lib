@@ -24,6 +24,7 @@ import uuid
 import libvirt
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
+from ovs.lib.helpers.toolbox import Toolbox
 from ovs.log.log_handler import LogHandler
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
@@ -592,7 +593,7 @@ class Sdk(object):
 
     @authenticated
     def create_vm(self, name, vcpus, ram, disks, cdrom_iso=None, os_type=None, os_variant=None, vnc_listen='0.0.0.0',
-                  networks=None, start=False, autostart=False, ovs_vm=True, edge_port=26203, hostname=None):
+                  networks=None, start=False, autostart=False, edge_configuration=None):
         """
         Creates a VM
         @TODO use Edge instead of fuse for disks
@@ -603,9 +604,7 @@ class Sdk(object):
         when using existing storage, size can be removed
         :param cdrom_iso: path to the iso the mount
         :param autostart: start vm when the hypervisor starts
-        :param ovs_vm: virtual machine setup for ovs
-        :param edge_port: port of the edge - when ovs vm is true
-        :param hostname: host of the volumes - when ovs vm is true
+        :param edge_configuration: virtual machine setup for ovs with edge configuration
         :param os_type: type of os
         :param os_variant: variant of the os
         :param vnc_listen:
@@ -621,9 +620,15 @@ class Sdk(object):
         except libvirt.libvirtError:
             pass
 
-        if ovs_vm is True and (hostname is None or edge_port is None):
-            raise RuntimeError('Both hostname and edge_port need to be supplied if the VM will be used by OVS.')
-
+        ovs_vm = False
+        if edge_configuration is not None:
+            required_edge_params = {'port': (int, {'min': 1, 'max': 65565}),
+                                    'protocol': (str, ['tcp', 'udp', 'rdma']),
+                                    'hostname': (str, None),
+                                    'username': (str, None, False),
+                                    'password': (str, None, False)}
+            Toolbox.verify_required_params(required_edge_params, edge_configuration)
+            ovs_vm = True
         command = ['virt-install']
         options = ['--connect=qemu+ssh://{0}@{1}/system'.format(self.login, self.host),
                    '--name={0}'.format(name),
@@ -649,7 +654,7 @@ class Sdk(object):
             options.append('--network=none')
         if autostart is True:
             options.append('--autostart')
-        if ovs_vm is True:
+        if edge_configuration is True:
             options.append('--dry-run')
         else:
             for network in networks:
@@ -658,7 +663,7 @@ class Sdk(object):
             logger.info('Creating vm {0} with command {1}'.format(name, ' '.join(command + options)))
             vm_xml = self.ssh_client.run(command + options)
             if ovs_vm is True:
-                vm_xml = self._update_xml_for_ovs(vm_xml, hostname, edge_port)
+                vm_xml = self._update_xml_for_ovs(vm_xml, edge_configuration)
             self._conn.defineXML(vm_xml)
             if start is True:
                 self.power_on(name)
@@ -670,12 +675,11 @@ class Sdk(object):
             raise RuntimeError(msg)
 
     @staticmethod
-    def _update_xml_for_ovs(xml, hostname, edge_port):
+    def _update_xml_for_ovs(xml, edge_configuration):
         """
         Update the xml to use OVS protocol and use the edge
         :param xml: xml to base upon
-        :param hostname: hostname of the volume owned
-        :param edge_port: port of the edge
+        :param edge_configuration: configuration details for the edge
         :return:
         """
         logger.info('Changing XML to use OVS protocol.')
@@ -690,17 +694,22 @@ class Sdk(object):
             element.find('driver').attrib.update(driver_update)
             # Change source to (vdisk without .raw)
             source_element = element.find('source')
+            user_config = {}
+            if edge_configuration.get('username') and edge_configuration.get('password'):
+                user_config = {'username': edge_configuration['username'], 'passwd': edge_configuration['password']}
             source = {'protocol': 'openvstorage',
                       'name': source_element.attrib.get('file').rsplit('/', 1)[1].rsplit('.', 1)[0]
                       if source_element.attrib.get('file') is not None else source_element.attrib.get('name'),
                       'snapshot-timeout': '120'}
+            source.update(user_config)
             source_element.attrib = source
-            # Add a new element under source with edge port and hostname pointer
+            # Add a new element under source with edge port and hostname pointermds-regression-000
+            element_attribute = {'name': edge_configuration['hostname'], 'port': str(edge_configuration['port'])}
             if len(source_element.getchildren()) == 0:
-                e = Element(tag='host', attrib={'name': hostname, 'port': str(edge_port)})
+                e = Element(tag='host', attrib=element_attribute)
                 source_element.insert(0, e)
             else:
-                source_element.find('host').attrib = {'name': hostname, 'port': str(edge_port)}
+                source_element.find('host').attrib = element_attribute
                 # Change address attrib
         logger.info('Xml change completed.')
         return ElementTree.tostring(root)
