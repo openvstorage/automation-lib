@@ -622,7 +622,7 @@ class Sdk(object):
 
         ovs_vm = False
         if edge_configuration is not None:
-            required_edge_params = {'port': (int, {'min': 1, 'max': 65565}),
+            required_edge_params = {'port': (int, {'min': 1, 'max': 65535}),
                                     'protocol': (str, ['tcp', 'udp', 'rdma']),
                                     'hostname': (str, None),
                                     'username': (str, None, False),

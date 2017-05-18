@@ -75,8 +75,8 @@ class SystemHelper(object):
         """
         return System.get_my_storagerouter()
 
-    @staticmethod
-    def get_ovs_version(client):
+    @classmethod
+    def get_ovs_version(cls, storagerouter=None):
         """
         Gets the installed ovs version
         :param client: Sshclient instance
@@ -84,14 +84,12 @@ class SystemHelper(object):
         :return: ovs version identifier. Either ee or ose
         :rtype: str
         """
-        # @todo replace with storagerouter.features instead
-        # Version mapping with identifier
-        mapping = {'ee': 'volumedriver-ee-base',
-                   'ose': 'volumedriver-no-dedup-base'}
-        installed_versions = PackageManager.get_installed_versions(client=client)
-        for ovs_version, detection_key in mapping.iteritems():
-            if detection_key in installed_versions:
-                return ovs_version
+        if storagerouter is None:
+            storagerouter = cls.get_local_storagerouter()
+        if storagerouter.features['alba']['edition'] == 'community':
+            return 'ose'
+        else:
+            return 'ee'
 
     @staticmethod
     def upper_case_first_letter(x):
