@@ -34,6 +34,7 @@ class VDiskHelper(object):
         """
 
         SYNC = "ok_sync"
+        STANDALONE = "ok_standalone"
         CHECKUP = "checkup_required"
         DEGRADED = "degraded"
         DISABLED = "disabled"
