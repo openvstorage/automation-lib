@@ -42,6 +42,7 @@ class ThreadHelper(object):
         args = args + (event,)
         thread = threading.Thread(target=target, args=tuple(args), kwargs=kwargs)
         thread.setName(str(name))
+        thread.setDaemon(True)
         thread.start()
         return thread, event
 
@@ -52,18 +53,22 @@ class ThreadHelper(object):
         ThreadHelper.LOGGER.info('Starting thread with target {0}'.format(target))
         thread = threading.Thread(target=target, args=tuple(args), kwargs=kwargs)
         thread.setName(str(name))
+        thread.setDaemon(True)
         thread.start()
         return thread
 
     @staticmethod
-    def stop_evented_threads(thread_pairs, r_semaphore=None, logger=LOGGER):
+    def stop_evented_threads(thread_pairs, r_semaphore=None, logger=LOGGER, timeout=300):
         for thread_pair in thread_pairs:
             if thread_pair[0].isAlive():
                 thread_pair[1].set()
             # Wait again to sync
             logger.info('Syncing threads')
         if r_semaphore is not None:
+            start = time.time()
             while r_semaphore.get_counter() < len(thread_pairs):  # Wait for the number of threads we currently have.
+                if time.time() - start > timeout:
+                    raise RuntimeError('Synching the thread with the r_semaphore has timed out.')
                 time.sleep(0.05)
             r_semaphore.wait()  # Unlock them to let them stop (the object is set -> wont loop)
         # Wait for threads to die
