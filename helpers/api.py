@@ -58,10 +58,8 @@ class NotFoundException(HttpException):
 
 class TimeOutError(RuntimeError):
     """
-    Custom tineout class
+    Custom timeout class
     """
-    def __init__(self, status_code, *args, **kwargs):
-        super(TimeOutError, self).__init__(*args, **kwargs)
 
 
 class OVSClient(object):
