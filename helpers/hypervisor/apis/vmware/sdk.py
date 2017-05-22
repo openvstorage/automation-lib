@@ -38,23 +38,23 @@ def authenticated(force=False):
     Decorator to make that a login is executed in case the current session isn't valid anymore
     @param force: Force a (re)login, as some methods also work when not logged in
     """
-    def wrapper(function):
+    def wrapper(func):
         def new_function(self, *args, **kwargs):
-            self.__doc__ = function.__doc__
+            self.__doc__ = func.__doc__
             try:
                 if force:
                     self._login()
-                return function(self, *args, **kwargs)
+                return func(self, *args, **kwargs)
             except WebFault as fault:
                 if 'The session is not authenticated' in str(fault):
                     logger.debug('Received WebFault authentication failure, logging in...')
                     self._login()
-                    return function(self, *args, **kwargs)
+                    return func(self, *args, **kwargs)
                 raise
             except NotAuthenticatedException:
                 logger.debug('Received NotAuthenticatedException, logging in...')
                 self._login()
-                return function(self, *args, **kwargs)
+                return func(self, *args, **kwargs)
         return new_function
     return wrapper
 

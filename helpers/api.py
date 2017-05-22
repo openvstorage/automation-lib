@@ -187,7 +187,7 @@ class OVSClient(object):
             else:
                 raise HttpException(status_code, message)
 
-    def _call(self, api, params, function, **kwargs):
+    def _call(self, api, params, func, **kwargs):
         if not api.endswith('/'):
             api = '{0}/'.format(api)
         if not api.startswith('/'):
@@ -197,7 +197,7 @@ class OVSClient(object):
         first_connect = self._token is None
         headers, url = self._prepare(params=params)
         try:
-            return self._process(function(url=url.format(api), headers=headers, verify=self._verify, **kwargs))
+            return self._process(func(url=url.format(api), headers=headers, verify=self._verify, **kwargs))
         except ForbiddenException:
             if self._volatile_client is not None:
                 self._volatile_client.delete(self._key)
@@ -205,7 +205,7 @@ class OVSClient(object):
                 raise
             self._token = None
             headers, url = self._prepare(params=params)
-            return self._process(function(url=url.format(api), headers=headers, verify=self._verify, **kwargs))
+            return self._process(func(url=url.format(api), headers=headers, verify=self._verify, **kwargs))
         except Exception:
             if self._volatile_client is not None:
                 self._volatile_client.delete(self._key)
@@ -216,7 +216,7 @@ class OVSClient(object):
         Executes a DELETE call
         :param api: Specification for to fill out in the URL, eg: /alba/backends/<albabackend_guid>
         """
-        return self._call(api=api, params={}, function=requests.delete)
+        return self._call(api=api, params={}, func=requests.delete)
 
     def get(self, api, params=None):
         """
@@ -224,7 +224,7 @@ class OVSClient(object):
         :param api: Specification for to fill out in the URL, eg: /vpools/<vpool_guid>/shrink_vpool
         :param params: Additional query parameters, eg: _dynamics
         """
-        return self._call(api=api, params=params, function=requests.get)
+        return self._call(api=api, params=params, func=requests.get)
 
     def post(self, api, data=None, params=None):
         """
@@ -233,7 +233,7 @@ class OVSClient(object):
         :param data: Data to post
         :param params: Additional query parameters, eg: _dynamics
         """
-        return self._call(api=api, params=params, function=requests.post, data=self._to_json(data))
+        return self._call(api=api, params=params, func=requests.post, data=self._to_json(data))
 
     def put(self, api, data=None, params=None):
         """
@@ -242,7 +242,7 @@ class OVSClient(object):
         :param data: Data to put
         :param params: Additional query parameters, eg: _dynamics
         """
-        return self._call(api=api, params=params, function=requests.put, data=self._to_json(data))
+        return self._call(api=api, params=params, func=requests.put, data=self._to_json(data))
 
     def patch(self, api, data=None, params=None):
         """
@@ -251,7 +251,7 @@ class OVSClient(object):
         :param data: Data to patch
         :param params: Additional query parameters, eg: _dynamics
         """
-        return self._call(api=api, params=params, function=requests.patch, data=self._to_json(data))
+        return self._call(api=api, params=params, func=requests.patch, data=self._to_json(data))
 
     def wait_for_task(self, task_id, timeout=None):
         """
