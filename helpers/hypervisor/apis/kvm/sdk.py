@@ -49,12 +49,12 @@ def _recurse(treeitem):
     return result
 
 
-def authenticated(function):
+def authenticated(func):
     """
     Decorator that make sure all required calls are running onto a connected SDK
     """
     def wrapper(self, *args, **kwargs):
-        self.__doc__ = function.__doc__
+        self.__doc__ = func.__doc__
         # determine if connection isn't closed.
         try:
             self._conn = self.connect(self.login, self.host)
@@ -64,7 +64,7 @@ def authenticated(function):
             except:
                 pass
             raise
-        return function(self, *args, **kwargs)
+        return func(self, *args, **kwargs)
     return wrapper
 
 
