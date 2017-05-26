@@ -24,14 +24,10 @@ class VPoolRemover(object):
     LOGGER = LogHandler.get(source="remove", name="ci_vpool_remover")
     REMOVE_VPOOL_TIMEOUT = 500
 
-    def __init__(self):
-        pass
-
     @staticmethod
     def remove_vpool(vpool_name, storagerouter_ip, api, timeout=REMOVE_VPOOL_TIMEOUT):
         """
         Removes a existing vpool from a storagerouter
-
         :param vpool_name: the name of a existing vpool
         :type vpool_name: str
         :param storagerouter_ip: the ip address of a existing storagerouter
@@ -40,10 +36,9 @@ class VPoolRemover(object):
         :type api: helpers.api.OVSClient
         :param timeout: max. time to wait for a task to complete
         :type timeout: int
-        :return: task was succesfull or not
-        :rtype: bool
+        :return: None
+        :rtype: NoneType
         """
-
         vpool_guid = VPoolHelper.get_vpool_by_name(vpool_name).guid
         storagerouter_guid = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid
         data = {"storagerouter_guid": storagerouter_guid}
@@ -56,6 +51,4 @@ class VPoolRemover(object):
             VPoolRemover.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            VPoolRemover.LOGGER.info("Deleting vPool `{0}` on storagerouter `{1}` should have succeeded"
-                                     .format(vpool_name, storagerouter_ip))
-            return True
+            VPoolRemover.LOGGER.info("Deleting vPool `{0}` on storagerouter `{1}` should have succeeded".format(vpool_name, storagerouter_ip))

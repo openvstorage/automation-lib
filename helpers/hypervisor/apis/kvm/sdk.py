@@ -49,12 +49,12 @@ def _recurse(treeitem):
     return result
 
 
-def authenticated(function):
+def authenticated(func):
     """
     Decorator that make sure all required calls are running onto a connected SDK
     """
     def wrapper(self, *args, **kwargs):
-        self.__doc__ = function.__doc__
+        self.__doc__ = func.__doc__
         # determine if connection isn't closed.
         try:
             self._conn = self.connect(self.login, self.host)
@@ -64,7 +64,7 @@ def authenticated(function):
             except:
                 pass
             raise
-        return function(self, *args, **kwargs)
+        return func(self, *args, **kwargs)
     return wrapper
 
 
@@ -622,7 +622,7 @@ class Sdk(object):
 
         ovs_vm = False
         if edge_configuration is not None:
-            required_edge_params = {'port': (int, {'min': 1, 'max': 65565}),
+            required_edge_params = {'port': (int, {'min': 1, 'max': 65535}),
                                     'protocol': (str, ['tcp', 'udp', 'rdma']),
                                     'hostname': (str, None),
                                     'username': (str, None, False),

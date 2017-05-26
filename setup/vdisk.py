@@ -86,9 +86,7 @@ class VDiskSetup(object):
     def create_vdisk(vdisk_name, vpool_name, size, storagerouter_ip, api, timeout=CREATE_VDISK_TIMEOUT):
         """
         Create a new vDisk on a certain vPool/storagerouter
-
-        :param vdisk_name: location of a vdisk on a vpool
-                           (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
+        :param vdisk_name: location of a vdisk on a vpool (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
         :type vdisk_name: str
         :param vpool_name: name of a existing vpool
         :type vpool_name: str
@@ -171,14 +169,11 @@ class VDiskSetup(object):
                      timeout=CREATE_CLONE_TIMEOUT):
         """
         Create a new vDisk on a certain vPool/storagerouter
-
-        :param vdisk_name: location of a vdisk on a vpool
-                           (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
+        :param vdisk_name: location of a vdisk on a vpool (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
         :type vdisk_name: str
         :param vpool_name: name of a existing vpool
         :type vpool_name: str
-        :param new_vdisk_name: location of the NEW vdisk on the vpool
-                           (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
+        :param new_vdisk_name: location of the NEW vdisk on the vpool (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
         :type new_vdisk_name: str
         :param storagerouter_ip: ip address of a existing storagerouter where the clone will be deployed
         :type storagerouter_ip: str
@@ -249,7 +244,6 @@ class VDiskSetup(object):
         :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
         """
-
         # fetch the requirements
         vdisk = VDiskHelper.get_vdisk_by_name(vdisk_name, vpool_name)
 
@@ -273,22 +267,20 @@ class VDiskSetup(object):
         """
         Create a new vDisk on a certain vPool/storagerouter
         Set a existing vDisk as vTemplate
-
-        :param vdisk_name: location of a vdisk on a vpool
-                           (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
+        :param vdisk_name: location of a vdisk on a vpool(e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
         :type vdisk_name: str
         :param vpool_name: name of a existing vpool
         :type vpool_name: str
-        :param new_vdisk_name: location of the NEW vdisk on the vpool
-                           (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
+        :param new_vdisk_name: location of the NEW vdisk on the vpool (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
         :type new_vdisk_name: str
         :param storagerouter_ip: ip address of a existing storagerouter where the clone will be deployed
         :type storagerouter_ip: str
         :param api: specify a valid api connection to the setup
         :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
+        :return: dict with info about the new vdisk {'vdisk_guid': new_vdisk.guid, 'name': new_vdisk.name, 'backingdevice': devicename}
+        :rtype: dict
         """
-
         # fetch the requirements
         vdisk = VDiskHelper.get_vdisk_by_name(vdisk_name, vpool_name)
         storagerouter_guid = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid
