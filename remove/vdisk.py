@@ -31,6 +31,24 @@ class VDiskRemover(object):
         pass
 
     @staticmethod
+    def remove_vdisks_with_structure(vdisks):
+        """
+        Remove many vdisks at once. Will keep the parent structure in mind
+        :param vdisks: list of vdisks 
+        :return: 
+        """
+        removed_guids = []
+        for vdisk in vdisks:
+            if vdisk.guid in removed_guids:
+                continue
+            if len(vdisk.child_vdisks_guids) > 0:
+                for vdisk_child_guid in vdisk.child_vdisks_guids:
+                    VDiskRemover.remove_vdisk(vdisk_child_guid)
+                    removed_guids.append(vdisk_child_guid)
+            VDiskRemover.remove_vdisk(vdisk.guid)
+            removed_guids.append(vdisk.guid)
+
+    @staticmethod
     def remove_snapshot(snapshot_guid, vdisk_name, vpool_name, api, timeout=REMOVE_SNAPSHOT_TIMEOUT):
         """
         Remove a existing snapshot from a existing vdisk
