@@ -143,3 +143,30 @@ class VDiskHelper(object):
         else:
             VDiskHelper.LOGGER.info("Setting config vDisk `{0}` should have succeeded".format(vdisk_name))
             return task_result[1]
+
+    @staticmethod
+    def scrub_vdisk(vdisk_guid, api, timeout=15 * 60, wait=True):
+        """
+        Scrub a specific vdisk
+        :param vdisk_guid: guid of the vdisk to scrub
+        :type vdisk_guid: str
+        :param api: specify a valid api connection to the setup
+        :type api: ci.helpers.api.OVSClient
+        :param timeout: time to wait for the task to complete
+        :type timeout: int
+        :param wait: wait for task to finish or not
+        :type wait: bool
+        :return: 
+        """
+        task_guid = api.post(api='/vdisks/{0}/scrub/'.format(vdisk_guid), data={})
+        if wait is True:
+            task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+            if not task_result[0]:
+                error_msg = "Scrubbing vDisk `{0}` has failed with error {1}".format(vdisk_guid, task_result[1])
+                VDiskHelper.LOGGER.error(error_msg)
+                raise RuntimeError(error_msg)
+            else:
+                VDiskHelper.LOGGER.info("Scrubbing vDisk `{0}` should have succeeded".format(vdisk_guid))
+                return task_result[1]
+        else:
+            return task_guid

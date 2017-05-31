@@ -264,6 +264,7 @@ class OVSClient(object):
             if timeout is not None and timeout < (time.time() - start):
                 raise TimeOutError('Waiting for task {0} has timed out.'.format(task_id))
             task_metadata = self.get('/tasks/{0}/'.format(task_id))
+            print task_metadata
             finished = task_metadata['status'] in ('FAILURE', 'SUCCESS')
             if finished is False:
                 if task_metadata != previous_metadata:
