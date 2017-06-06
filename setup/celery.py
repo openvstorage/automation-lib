@@ -16,7 +16,7 @@
 
 from ovs.extensions.generic.configuration import Configuration
 from ovs.extensions.generic.sshclient import SSHClient
-from ovs.extensions.services.service import ServiceManager
+from ovs.extensions.services.servicefactory import ServiceFactory
 from ovs.log.log_handler import LogHandler
 from ..helpers.storagerouter import StoragerouterHelper
 
@@ -44,8 +44,10 @@ class CelerySetup(object):
             # restart ovs-watcher-framework on all nodes
             for sr_ip in StoragerouterHelper.get_storagerouter_ips():
                 client = SSHClient(sr_ip, username='root')
+                service_manager = ServiceFactory.get_manager()
                 try:
-                    ServiceManager.restart_service(service_name, client)
+
+                    service_manager.restart_service(service_name, client)
                 except:
                     return False
             CelerySetup.LOGGER.info("Successfully restarted all `{0}` services!".format(service_name))

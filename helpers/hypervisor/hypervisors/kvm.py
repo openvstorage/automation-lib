@@ -53,8 +53,6 @@ class KVM(object):
         _ = wait  # For compatibility purposes only
         _ = storagedriver_mountpoint  # No vpool mountpoint on kvm, use different logic
         _ = storagedriver_storage_ip  # 127.0.0.1 always
-        if disks_info is None:
-            disks_info = []
         return self.sdk.delete_vm(vmid, devicename)
 
     def get_vm_agnostic_object(self, vmid):
