@@ -17,7 +17,7 @@ Hypervisor/ManagementCenter factory module
 Using the module requires libvirt api to be available on the MACHINE THAT EXECUTES THE CODE
 """
 
-from ovs.extensions.generic.filemutex import file_mutex
+from ovs_extensions.generic.filemutex import file_mutex
 
 
 class HypervisorFactory(object):

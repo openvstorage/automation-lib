@@ -18,8 +18,7 @@ from ovs.lib.generic import GenericController
 from ovs.log.log_handler import LogHandler
 from ..helpers.backend import BackendHelper
 from ..helpers.storagerouter import StoragerouterHelper
-from ..helpers.storagedriver import StoragedriverHelper
-from ..validate.decorators import required_roles, required_backend, check_vpool
+from ..validate.decorators import required_roles, check_vpool
 
 
 class VPoolSetup(object):

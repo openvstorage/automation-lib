@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.dal.hybrids.servicetype import ServiceType
-from ovs.extensions.db.arakoon.arakooninstaller import ArakoonInstaller
+from ovs.extensions.db.arakooninstaller import ArakoonInstaller
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.lib.alba import AlbaController
 from ovs.log.log_handler import LogHandler
@@ -70,14 +70,21 @@ class ArakoonSetup(object):
             raise RuntimeError("Incompatible Arakoon cluster type selected: {0}".format(service_type))
 
         ArakoonSetup.LOGGER.info("Starting creation of new arakoon cluster with name `{0}`, servicetype `{1}`, ip `{2}`, base_dir `{3}`".format(cluster_name, service_type, storagerouter_ip, cluster_basedir))
-        info = ArakoonInstaller.create_cluster(cluster_name=cluster_name, cluster_type=service_type, ip=storagerouter_ip,
-                                               base_dir=cluster_basedir, plugins=plugins, locked=False, internal=False)
+        arakoon_installer = ArakoonInstaller(cluster_name)
+        arakoon_installer.create_cluster(cluster_type=service_type,
+                                         ip=storagerouter_ip,
+                                         base_dir=cluster_basedir,
+                                         plugins=plugins,
+                                         locked=False,
+                                         internal=False,
+                                         log_sinks=LogHandler.get_sink_path('automation_lib_arakoon_server'),
+                                         crash_log_sinks=LogHandler.get_sink_path('automation_lib_arakoon_server_crash'))
         if service_type == ServiceType.ARAKOON_CLUSTER_TYPES.ABM:
             client.run(['ln', '-s', '/usr/lib/alba/albamgr_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
         elif service_type == ServiceType.ARAKOON_CLUSTER_TYPES.NSM:
             client.run(['ln', '-s', '/usr/lib/alba/nsm_host_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
-        ArakoonInstaller.start_cluster(metadata=info['metadata'])
-        ArakoonInstaller.unclaim_cluster(cluster_name=cluster_name)
+        arakoon_installer.start_cluster()
+        arakoon_installer.unclaim_cluster()
         ArakoonSetup.LOGGER.info("Finished creation of new arakoon cluster with name `{0}`, servicetype `{1}`, ip `{2}`, base_dir `{3}`".format(cluster_name, service_type, storagerouter_ip, cluster_basedir))
 
     @staticmethod
@@ -118,7 +125,13 @@ class ArakoonSetup(object):
 
         ArakoonSetup.LOGGER.info("Starting extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`"
                                  .format(cluster_name, master_storagerouter_ip, storagerouter_ip, cluster_basedir))
-        ArakoonInstaller.extend_cluster(new_ip=storagerouter_ip, cluster_name=cluster_name, base_dir=cluster_basedir, locked=False)
+        arakoon_installer = ArakoonInstaller(cluster_name)
+        arakoon_installer.load()
+        arakoon_installer.extend_cluster(new_ip=storagerouter_ip,
+                                         base_dir=cluster_basedir,
+                                         locked=False,
+                                         log_sinks=LogHandler.get_sink_path('automation_lib_arakoon_server'),
+                                         crash_log_sinks=LogHandler.get_sink_path('automation_lib_arakoon_server_crash'))
         if service_type == ServiceType.ARAKOON_CLUSTER_TYPES.ABM:
             client.run(['ln', '-s', '/usr/lib/alba/albamgr_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
         elif service_type == ServiceType.ARAKOON_CLUSTER_TYPES.NSM:
@@ -127,7 +140,7 @@ class ArakoonSetup(object):
         # checking if we need to restart the given nodes
         if len(clustered_nodes) != 0:
             ArakoonSetup.LOGGER.info("Trying to restart all given nodes of arakoon: {0}".format(clustered_nodes, cluster_name))
-            ArakoonInstaller.restart_cluster_after_extending(cluster_name=cluster_name, new_ip=storagerouter_ip)
+            arakoon_installer.restart_cluster_after_extending(new_ip=storagerouter_ip)
             ArakoonSetup.LOGGER.info("Finished restarting all given nodes of arakoon: {0}".format(clustered_nodes, cluster_name))
 
         ArakoonSetup.LOGGER.info("Finished extending arakoon cluster with name `{0}`, master_ip `{1}`, slave_ip `{2}`, base_dir `{3}`"
