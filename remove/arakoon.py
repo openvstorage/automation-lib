@@ -39,5 +39,6 @@ class ArakoonRemover(object):
         """
         ArakoonRemover.LOGGER.info("Starting removing arakoon cluster with name `{0}`, master_ip `{1}`".format(cluster_name, master_storagerouter_ip))
         arakoon_installer = ArakoonInstaller(cluster_name)
+        arakoon_installer.load()
         arakoon_installer.delete_cluster()
         ArakoonRemover.LOGGER.info("Finished removing arakoon cluster with name `{0}`, master_ip `{1}`".format(cluster_name, master_storagerouter_ip))
