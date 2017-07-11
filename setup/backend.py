@@ -72,7 +72,7 @@ class BackendSetup(object):
         )
 
         # ADD_ALBABACKEND
-        alba_backend = api.post(api='alba/backends', data={'backend_guid': backend['guid'], 'scaling': scaling})
+        api.post(api='alba/backends', data={'backend_guid': backend['guid'], 'scaling': scaling})
 
         # CHECK_STATUS until done
         backend_running_status = "RUNNING"

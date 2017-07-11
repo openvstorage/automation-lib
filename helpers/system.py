@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 import time
 from ovs.log.log_handler import LogHandler
-from ovs.extensions.services.service import ServiceManager
+from ovs.extensions.services.servicefactory import ServiceFactory
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
 
@@ -38,10 +38,11 @@ class SystemHelper(object):
         :rtype: list
         """
         non_running_ovs_services = []
-        for service in ServiceManager.list_services(client):
+        service_manager = ServiceFactory.get_manager()
+        for service in service_manager.list_services(client):
             if not service.startswith('ovs-'):
                 continue
-            if ServiceManager.get_service_status(service, client) != 'active':
+            if service_manager.get_service_status(service, client) != 'active':
                 non_running_ovs_services.append(service)
         return non_running_ovs_services
 
@@ -97,14 +98,15 @@ class SystemHelper(object):
             except:
                 logger.debug('Could not establish a connection yet to {0} after {1}s'.format(ip, delta))
             time.sleep(1)
-        ovs_services = [service for service in ServiceManager.list_services(client) if service.startswith('ovs-')]
+        service_manager = ServiceFactory.get_manager()
+        ovs_services = [service for service in service_manager.list_services(client) if service.startswith('ovs-')]
         active_services = []
         failed_service = []
         activating_services = []
         # Initially class these services
         for service in ovs_services:
             logger.debug('Initially classifying {0}'.format(service))
-            service_state = ServiceManager.get_service_status(service, client)
+            service_state = service_manager.get_service_status(service, client)
             logger.debug('Service {0} - State {1}'.format(service, service_state))
             if service_state in failed_states:
                 failed_service.append(service)
@@ -119,7 +121,7 @@ class SystemHelper(object):
             if time.time() - start_time > service_timeout:
                 break
             service = activating_services.pop()
-            service_state = ServiceManager.get_service_status(service, client)
+            service_state = service_manager.get_service_status(service, client)
             if service_state in failed_states:
                 failed_service.append(service)
             elif service_state in active_states:

@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 import re
 import socket
-from ovs.extensions.generic.remote import remote
+from ovs_extensions.generic.remote import remote
 from ovs.log.log_handler import LogHandler
 
 
