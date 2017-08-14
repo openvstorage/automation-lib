@@ -17,7 +17,6 @@
 import ast
 from ovs.log.log_handler import LogHandler
 from ..helpers.albanode import AlbaNodeHelper
-from ..helpers.asdmanager import ASDManagerClient
 from ..helpers.backend import BackendHelper
 from ..helpers.exceptions import AlbaBackendNotFoundError, PresetNotFoundError, AlbaNodeNotFoundError
 

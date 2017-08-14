@@ -16,7 +16,6 @@
 from ovs.dal.hybrids.albanode import AlbaNode
 from ovs.dal.lists.albanodelist import AlbaNodeList
 from ovs.log.log_handler import LogHandler
-from ..helpers.asdmanager import ASDManagerClient
 
 
 class AlbaNodeHelper(object):
