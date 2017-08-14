@@ -83,12 +83,12 @@ class AlbaNodeHelper(object):
 
     @staticmethod
     def _map_node_disks(albanode):
-        asd_client = ASDManagerClient(albanode)
         mapping = {}
-        disks = asd_client.get_disks()
-        for alias, disk in disks.iteritems():
-            # Get diskname
-            diskname = disk['device'].split('/')[-1]
-            # Map aliases to the diskname
-            mapping[diskname] = disk['aliases']
+        stack = albanode.client.get_stack()
+        for slot_id, slot_info in stack.iteritems():
+            # Get disk name
+            if all(key in slot_info for key in ("device", "aliases")):
+                diskname = slot_info['device'].split('/')[-1]
+                # Map aliases to the disk name
+                mapping[diskname] = slot_info['aliases']
         return mapping

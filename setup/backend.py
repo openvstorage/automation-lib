@@ -230,8 +230,7 @@ class BackendSetup(object):
                     if alba_node_guid not in disk_queue:
                         disk_queue[alba_node_guid] = {}
                     # Initialize disk:
-                    BackendSetup.LOGGER.info(
-                        'Adding {0} to disk queue for providing {1} asds.'.format(disk_path, amount_of_osds))
+                    BackendSetup.LOGGER.info('Adding {0} to disk queue for providing {1} asds.'.format(disk_path, amount_of_osds))
                     disk_queue[alba_node_guid][disk_path] = amount_of_osds
         for alba_node_guid, queue in disk_queue.iteritems():
             BackendSetup.LOGGER.info(
