@@ -16,16 +16,16 @@
 import json
 from ovs.dal.lists.vpoollist import VPoolList
 from ovs.extensions.generic.configuration import Configuration
+from ovs.extensions.generic.logger import Logger
 from ovs.extensions.services.servicefactory import ServiceFactory
 from ovs.lib.helpers.toolbox import Toolbox
-from ovs.log.log_handler import LogHandler
 from ovs.dal.hybrids.service import Service
 from ovs.extensions.generic.sshclient import SSHClient
 
 
 class ProxySetup(object):
 
-    LOGGER = LogHandler.get(source="setup", name="ci_proxy_setup")
+    LOGGER = Logger("setup-ci_proxy_setup")
     PARAMS = {'ips': (list, Toolbox.regex_ip, False),
               'transport': (str, ['tcp', 'rdma'], False),
               'log_level': (str, ['info', 'debug'], False),

@@ -13,10 +13,10 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ovs.log.log_handler import LogHandler
 from ovs.dal.hybrids.vdisk import VDisk
 from ovs.dal.lists.vdisklist import VDiskList
 from ovs.dal.lists.vpoollist import VPoolList
+from ovs.extensions.generic.logger import Logger
 from ..helpers.exceptions import VPoolNotFoundError, VDiskNotFoundError
 
 
@@ -26,7 +26,7 @@ class VDiskHelper(object):
     """
 
     GET_CONFIG_PARAMS_TIMEOUT = 60
-    LOGGER = LogHandler.get(source="setup", name="ci_vdisk_setup")
+    LOGGER = Logger("helpers-ci_vdisk_setup")
 
     class DtlStatus(object):
         """

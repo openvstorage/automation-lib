@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.dal.hybrids.storagedriver import StorageDriver
 from ovs.dal.lists.storagedriverlist import StorageDriverList
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 
 
 class StoragedriverHelper(object):
@@ -23,7 +23,7 @@ class StoragedriverHelper(object):
     """
     StoragedriverHelper class
     """
-    LOGGER = LogHandler.get(source="helpers", name="ci_storagedriver_helper")
+    LOGGER = Logger("helpers-ci_storagedriver_helper")
 
     def __init__(self):
         pass

@@ -14,7 +14,7 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import time
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
 from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_preset, \
@@ -23,7 +23,7 @@ from ..validate.decorators import required_roles, required_backend, required_pre
 
 class BackendSetup(object):
 
-    LOGGER = LogHandler.get(source="setup", name="ci_backend_setup")
+    LOGGER = Logger("setup-ci_backend_setup")
     LOCAL_STACK_SYNC = 30
     BACKEND_TIMEOUT = 15
     INITIALIZE_DISK_TIMEOUT = 300

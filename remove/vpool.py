@@ -14,14 +14,14 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.storagerouter import StoragerouterHelper
 from ..helpers.vpool import VPoolHelper
 
 
 class VPoolRemover(object):
 
-    LOGGER = LogHandler.get(source="remove", name="ci_vpool_remover")
+    LOGGER = Logger("remove-ci_vpool_remover")
     REMOVE_VPOOL_TIMEOUT = 500
 
     @staticmethod
