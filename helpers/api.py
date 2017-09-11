@@ -27,7 +27,7 @@ from requests.packages.urllib3 import disable_warnings
 from requests.packages.urllib3.exceptions import InsecurePlatformWarning
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.packages.urllib3.exceptions import SNIMissingWarning
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 
@@ -66,7 +66,7 @@ class OVSClient(object):
     """
     Represents the OVS client
     """
-    _logger = LogHandler.get('helpers', name='api')
+    _logger = Logger('helpers-api')
 
     disable_warnings(InsecurePlatformWarning)
     disable_warnings(InsecureRequestWarning)

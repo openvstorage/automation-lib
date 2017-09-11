@@ -16,16 +16,16 @@
 
 from ovs.dal.hybrids.servicetype import ServiceType
 from ovs.extensions.db.arakooninstaller import ArakoonInstaller
+from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.lib.alba import AlbaController
-from ovs.log.log_handler import LogHandler
 from ..helpers.backend import BackendHelper
 from ..validate.decorators import required_backend, required_arakoon_cluster
 
 
 class ArakoonSetup(object):
 
-    LOGGER = LogHandler.get(source="setup", name="ci_arakoon_setup")
+    LOGGER = Logger("setup-ci_arakoon_setup")
 
     def __init__(self):
         pass

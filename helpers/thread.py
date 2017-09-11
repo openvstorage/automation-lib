@@ -16,11 +16,11 @@
 import time
 import threading
 from threading import Lock
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 
 
 class ThreadHelper(object):
-    LOGGER = LogHandler.get(source='helpers', name='ci.threading')
+    LOGGER = Logger('helpers-ci_threading')
 
     @staticmethod
     def start_thread_with_event(target, name, args=(), kwargs=None):

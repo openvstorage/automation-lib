@@ -14,7 +14,7 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 from subprocess import check_output
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.fstab import FstabHelper
 from ..helpers.storagerouter import StoragerouterHelper
 from ..setup.roles import RoleSetup
@@ -22,7 +22,7 @@ from ..setup.roles import RoleSetup
 
 class RoleRemover(object):
 
-    LOGGER = LogHandler.get(source="remove", name="ci_role_remover")
+    LOGGER = Logger("remove-ci_role_remover")
     CONFIGURE_DISK_TIMEOUT = 300
 
     @staticmethod

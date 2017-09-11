@@ -14,10 +14,9 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
 from ovs.dal.lists.vpoollist import VPoolList
+from ovs.extensions.generic.logger import Logger
 from ..helpers.exceptions import VPoolNotFoundError
-
 
 
 class VPoolHelper(object):
@@ -34,7 +33,7 @@ class VPoolHelper(object):
         ASYNC = "a_sync"
         DISABLED = "no_sync"
 
-    LOGGER = LogHandler.get(source='helpers', name="ci_vpool")
+    LOGGER = Logger("helpers-ci_vpool")
 
     def __init__(self):
         pass

@@ -14,8 +14,8 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.extensions.generic.configuration import Configuration
+from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
-from ovs.log.log_handler import LogHandler
 from ..helpers.backend import BackendHelper
 from ..helpers.exceptions import DirectoryNotFoundError, ArakoonClusterNotFoundError
 from ..helpers.vdisk import VDiskHelper
@@ -23,7 +23,7 @@ from ..validate.backend import BackendValidation
 from ..validate.roles import RoleValidation
 from ..validate.vpool import VPoolValidation
 
-LOGGER = LogHandler.get(source='decorators', name="ci_decorator")
+LOGGER = Logger("validate-ci_decorator")
 LOCATION_OPTIONS = ['GLOBAL', 'LOCAL']
 
 

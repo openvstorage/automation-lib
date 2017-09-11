@@ -15,8 +15,8 @@
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.dal.lists.storagerouterlist import StorageRouterList
 from ovs.dal.hybrids.storagerouter import StorageRouter
+from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.system import System
-from ovs.log.log_handler import LogHandler
 
 
 class StoragerouterHelper(object):
@@ -24,7 +24,7 @@ class StoragerouterHelper(object):
     """
     StoragerouterHelper class
     """
-    LOGGER = LogHandler.get(source="helpers", name="ci_storagerouter_helper")
+    LOGGER = Logger("helpers-ci_storagerouter_helper")
 
     cache_timeout = 60
     disk_map_cache = {}

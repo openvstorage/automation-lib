@@ -17,7 +17,7 @@ from ovs.dal.lists.albabackendlist import AlbaBackendList
 from ovs.dal.lists.backendlist import BackendList
 from ovs.dal.lists.backendtypelist import BackendTypeList
 from ovs.dal.hybrids.albabackend import AlbaBackend
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.exceptions import PresetNotFoundError, AlbaBackendNotFoundError
 
 
@@ -25,7 +25,7 @@ class BackendHelper(object):
     """
     BackendHelper class
     """
-    LOGGER = LogHandler.get(source='helpers', name="ci_backend")
+    LOGGER = Logger("helpers-ci_backend")
 
     def __init__(self):
         pass

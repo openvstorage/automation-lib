@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.dal.hybrids.albanode import AlbaNode
 from ovs.dal.lists.albanodelist import AlbaNodeList
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 
 
 class AlbaNodeHelper(object):
@@ -23,7 +23,7 @@ class AlbaNodeHelper(object):
     Alba node helper class
     """
 
-    LOGGER = LogHandler.get(source='helpers', name="ci_albanode")
+    LOGGER = Logger('helpers-ci_albanode')
     IGNORE_KEYS = ('_error', '_duration', '_version', '_success')
 
     @staticmethod

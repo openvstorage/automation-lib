@@ -14,17 +14,17 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import time
-from ovs.log.log_handler import LogHandler
-from ovs.extensions.services.servicefactory import ServiceFactory
+from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
+from ovs.extensions.services.servicefactory import ServiceFactory
 
 
 class SystemHelper(object):
     """
     BackendHelper class
     """
-    LOGGER = LogHandler.get(source='helpers', name="ci_system")
+    LOGGER = Logger("helpers-ci_system")
 
     def __init__(self):
         pass

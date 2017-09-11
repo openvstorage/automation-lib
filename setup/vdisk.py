@@ -14,7 +14,7 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.storagerouter import StoragerouterHelper
 from ..helpers.vdisk import VDiskHelper
 from ..helpers.vpool import VPoolHelper
@@ -23,7 +23,7 @@ from ..validate.decorators import required_vdisk, required_snapshot, required_vt
 
 class VDiskSetup(object):
 
-    LOGGER = LogHandler.get(source="setup", name="ci_vdisk_setup")
+    LOGGER = Logger("setup-ci_vdisk_setup")
     CREATE_SNAPSHOT_TIMEOUT = 60
     CREATE_VDISK_TIMEOUT = 60
     CREATE_CLONE_TIMEOUT = 60

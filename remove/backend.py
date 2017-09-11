@@ -13,7 +13,7 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
 from ..validate.decorators import required_backend, required_preset
@@ -21,7 +21,7 @@ from ..validate.decorators import required_backend, required_preset
 
 class BackendRemover(object):
 
-    LOGGER = LogHandler.get(source="remove", name="ci_backend_remover")
+    LOGGER = Logger("remove-ci_backend_remover")
     REMOVE_ASD_TIMEOUT = 60
     REMOVE_DISK_TIMEOUT = 60
     REMOVE_BACKEND_TIMEOUT = 60

@@ -15,15 +15,15 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.extensions.generic.configuration import Configuration
+from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.services.servicefactory import ServiceFactory
-from ovs.log.log_handler import LogHandler
 from ..helpers.storagerouter import StoragerouterHelper
 
 
 class CelerySetup(object):
 
-    LOGGER = LogHandler.get(source="setup", name="ci_celery_setup")
+    LOGGER = Logger("setup-ci_celery_setup")
     SCHEDULED_TASK_CFG = "/ovs/framework/scheduling/celery"
 
     def __init__(self):
