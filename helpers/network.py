@@ -15,15 +15,15 @@
 # but WITHOUT ANY WARRANTY of any kind.
 import re
 import socket
+from ovs.extensions.generic.logger import Logger
 from ovs_extensions.generic.remote import remote
-from ovs.log.log_handler import LogHandler
 
 
 class NetworkHelper(object):
     """
     NetworkHelper class
     """
-    LOGGER = LogHandler.get(source="helpers", name="ci_network_helper")
+    LOGGER = Logger("helpers-ci_network_helper")
 
     def __init__(self):
         pass
@@ -41,7 +41,7 @@ class NetworkHelper(object):
         :param listener_ip: ip to listen on
         :type listener_ip: str
         :param logger: logging instance
-        :type logger: ovs.log.log_handler.LogHandler
+        :type logger: ovs.extensions.generic.logger.Logger
         :return: port number
         :rtype: int
         """

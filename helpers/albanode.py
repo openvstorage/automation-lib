@@ -15,8 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.dal.hybrids.albanode import AlbaNode
 from ovs.dal.lists.albanodelist import AlbaNodeList
-from ovs.log.log_handler import LogHandler
-from ..helpers.asdmanager import ASDManagerClient
+from ovs.extensions.generic.logger import Logger
 
 
 class AlbaNodeHelper(object):
@@ -24,7 +23,7 @@ class AlbaNodeHelper(object):
     Alba node helper class
     """
 
-    LOGGER = LogHandler.get(source='helpers', name="ci_albanode")
+    LOGGER = Logger('helpers-ci_albanode')
     IGNORE_KEYS = ('_error', '_duration', '_version', '_success')
 
     @staticmethod
@@ -83,12 +82,12 @@ class AlbaNodeHelper(object):
 
     @staticmethod
     def _map_node_disks(albanode):
-        asd_client = ASDManagerClient(albanode)
         mapping = {}
-        disks = asd_client.get_disks()
-        for alias, disk in disks.iteritems():
-            # Get diskname
-            diskname = disk['device'].split('/')[-1]
-            # Map aliases to the diskname
-            mapping[diskname] = disk['aliases']
+        stack = albanode.client.get_stack()
+        for slot_id, slot_info in stack.iteritems():
+            # Get disk name
+            if all(key in slot_info for key in ("device", "aliases")):
+                diskname = slot_info['device'].split('/')[-1]
+                # Map aliases to the disk name
+                mapping[diskname] = slot_info['aliases']
         return mapping

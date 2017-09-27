@@ -14,13 +14,13 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..validate.decorators import required_vdisk
 
 
 class VDiskValidation(object):
 
-    LOGGER = LogHandler.get(source="validate", name="ci_vdisk_validate")
+    LOGGER = Logger("validate-ci_vdisk_validate")
 
     def __init__(self):
         pass

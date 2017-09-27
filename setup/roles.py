@@ -14,14 +14,14 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.storagerouter import StoragerouterHelper
 from ..validate.decorators import check_role_on_disk
 
 
 class RoleSetup(object):
 
-    LOGGER = LogHandler.get(source="setup", name="ci_role_setup")
+    LOGGER = Logger("setup-ci_role_setup")
     CONFIGURE_DISK_TIMEOUT = 300
 
     MIN_PARTITION_SIZE = 5

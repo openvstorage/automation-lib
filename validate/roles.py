@@ -13,13 +13,13 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.disk import DiskHelper
 
 
 class RoleValidation(object):
 
-    LOGGER = LogHandler.get(source="validate", name="ci_role_validate")
+    LOGGER = Logger("validate-ci_role_validate")
 
     def __init__(self):
         pass

@@ -24,9 +24,9 @@ from suds.client import Client, WebFault
 from suds.cache import ObjectCache
 from suds.sudsobject import Property
 from suds.plugin import MessagePlugin
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 
-logger = LogHandler.get('helpers', name='vmware sdk')
+logger = Logger('helpers-vmware_sdk')
 
 
 class NotAuthenticatedException(BaseException):

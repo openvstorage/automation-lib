@@ -14,14 +14,14 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.vdisk import VDiskHelper
 from ..validate.decorators import required_vtemplate
 
 
 class VDiskRemover(object):
 
-    LOGGER = LogHandler.get(source="remove", name="ci_vdisk_remover")
+    LOGGER = Logger("remove-ci_vdisk_remover")
     REMOVE_SNAPSHOT_TIMEOUT = 60
     REMOVE_VTEMPLATE_TIMEOUT = 60
     REMOVE_VDISK_TIMEOUT = 5 * 60

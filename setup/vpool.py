@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.lib.generic import GenericController
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.backend import BackendHelper
 from ..helpers.storagerouter import StoragerouterHelper
 from ..validate.decorators import required_roles, check_vpool
@@ -23,7 +23,7 @@ from ..validate.decorators import required_roles, check_vpool
 
 class VPoolSetup(object):
 
-    LOGGER = LogHandler.get(source='setup', name='ci_vpool_setup')
+    LOGGER = Logger('setup-ci_vpool_setup')
     ADD_VPOOL_TIMEOUT = 500
     REQUIRED_VPOOL_ROLES = ['DB', 'WRITE', 'DTL']
 

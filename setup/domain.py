@@ -14,7 +14,7 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.backend import BackendHelper
 from ..helpers.domain import DomainHelper
 from ..helpers.storagerouter import StoragerouterHelper
@@ -23,7 +23,7 @@ from ..validate.decorators import required_backend
 
 class DomainSetup(object):
 
-    LOGGER = LogHandler.get(source="setup", name="ci_domain_setup")
+    LOGGER = Logger("setup-ci_domain_setup")
 
     def __init__(self):
         pass

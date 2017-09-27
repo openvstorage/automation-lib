@@ -14,7 +14,7 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import time
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
 from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_preset, \
@@ -23,7 +23,7 @@ from ..validate.decorators import required_roles, required_backend, required_pre
 
 class BackendSetup(object):
 
-    LOGGER = LogHandler.get(source="setup", name="ci_backend_setup")
+    LOGGER = Logger("setup-ci_backend_setup")
     LOCAL_STACK_SYNC = 30
     BACKEND_TIMEOUT = 15
     INITIALIZE_DISK_TIMEOUT = 300
@@ -44,7 +44,6 @@ class BackendSetup(object):
     def add_backend(backend_name, api, scaling='LOCAL', timeout=BACKEND_TIMEOUT, max_tries=MAX_BACKEND_TRIES):
         """
         Add a new backend
-
         :param backend_name: Name of the Backend to add
         :type backend_name: str
         :param scaling: LOCAL or GLOBAL
@@ -60,7 +59,6 @@ class BackendSetup(object):
         :returns: creation is successfully succeeded?
         :rtype: bool
         """
-
         # ADD_BACKEND
         backend = api.post(
             api='backends',
@@ -95,8 +93,7 @@ class BackendSetup(object):
                 time.sleep(timeout)
 
         BackendSetup.LOGGER.error("Creation of Backend `{0}` and scaling `{1}` failed with status: {2}!"
-                                  .format(backend_name, scaling,
-                                          BackendHelper.get_backend_status_by_name(backend_name)))
+                                  .format(backend_name, scaling, BackendHelper.get_backend_status_by_name(backend_name)))
         return False
 
     @staticmethod
@@ -105,7 +102,6 @@ class BackendSetup(object):
     def add_preset(albabackend_name, preset_details, api, timeout=ADD_PRESET_TIMEOUT):
         """
         Add a new preset
-
         :param albabackend_name: albabackend name (e.g. 'mybackend')
         :type albabackend_name: str
         :param preset_details: dictionary with details of a preset e.g.
@@ -128,7 +124,6 @@ class BackendSetup(object):
         :return: success or not
         :rtype: bool
         """
-
         # BUILD_PRESET
         preset = {'name': preset_details['name'],
                   'policies': preset_details['policies'],
@@ -145,13 +140,11 @@ class BackendSetup(object):
         task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Preset `{0}` has failed to create on backend `{1}`"\
-                .format(preset_details['name'], albabackend_name)
+            error_msg = "Preset `{0}` has failed to create on backend `{1}`".format(preset_details['name'], albabackend_name)
             BackendSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            BackendSetup.LOGGER.info("Creation of preset `{0}` should have succeeded on backend `{1}`"
-                                     .format(preset_details['name'], albabackend_name))
+            BackendSetup.LOGGER.info("Creation of preset `{0}` should have succeeded on backend `{1}`".format(preset_details['name'], albabackend_name))
             return True
 
     @staticmethod
@@ -160,7 +153,6 @@ class BackendSetup(object):
     def update_preset(albabackend_name, preset_name, policies, api, timeout=UPDATE_PRESET_TIMEOUT):
         """
         Update a existing preset
-
         :param albabackend_name: albabackend name
         :type albabackend_name: str
         :param preset_name: name of a existing preset
@@ -174,7 +166,6 @@ class BackendSetup(object):
         :return: success or not
         :rtype: bool
         """
-
         task_guid = api.post(
             api='/alba/backends/{0}/update_preset'
                 .format(BackendHelper.get_alba_backend_guid_by_name(albabackend_name)),
@@ -199,7 +190,6 @@ class BackendSetup(object):
     def add_asds(target, disks, albabackend_name, api, claim_retries=MAX_CLAIM_RETRIES):
         """
         Initialize and claim a new asds on given disks
-
         :param target: target to add asds too
         :type target: str
         :param disks: dict with diskname as key and amount of osds as value
@@ -213,78 +203,70 @@ class BackendSetup(object):
         :return: preset_name
         :rtype: str
         """
-        # Make sure all backends are registered
-        BackendSetup._discover_and_register_nodes(api)
-        # target is a node
-        node_mapping = AlbaNodeHelper._map_alba_nodes(api)
+        BackendSetup._discover_and_register_nodes(api)  # Make sure all backends are registered
+        node_mapping = AlbaNodeHelper._map_alba_nodes(api)  # target is a node
+        alba_backend_guid = BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
 
-        local_stack = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=api)
-        disk_queue = {}
+        backend_info = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=api)
+        local_stack = backend_info['local_stack']
+        node_slot_information = {}
         for disk, amount_of_osds in disks.iteritems():
             disk_object = AlbaNodeHelper.get_disk_by_ip(ip=target, diskname=disk)
             # Get the name of the disk out of the path, only expecting one with ata-
-            disk_path = BackendHelper.get_local_stack_alias(disk_object)
+            slot_id = BackendHelper.get_local_stack_alias(disk_object)
             for alba_node_id, alba_node_guid in node_mapping.iteritems():
+                node_info = local_stack[alba_node_id]
                 # Check if the alba_node_id has the disk
-                if disk_path in local_stack['local_stack'][alba_node_id]:
-                    if alba_node_guid not in disk_queue:
-                        disk_queue[alba_node_guid] = {}
-                    # Initialize disk:
-                    BackendSetup.LOGGER.info(
-                        'Adding {0} to disk queue for providing {1} asds.'.format(disk_path, amount_of_osds))
-                    disk_queue[alba_node_guid][disk_path] = amount_of_osds
-        for alba_node_guid, queue in disk_queue.iteritems():
-            BackendSetup.LOGGER.info(
-                'Posting disk queue {0} for alba_node_guid {1}'.format(disk_queue[alba_node_guid], alba_node_guid))
-            result = BackendSetup._initialize_disk(
-                alba_node_guid=alba_node_guid,
-                queue=disk_queue[alba_node_guid],
-                api=api)
-            BackendSetup.LOGGER.info('Claiming disks was succesfull. Result = {0}'.format(result))
+                if slot_id in node_info:
+                    slot_information = node_slot_information.get(alba_node_guid, [])
+                    BackendSetup.LOGGER.info('Adding {0} to disk queue for providing {1} osds.'.format(slot_id, amount_of_osds))
+                    slot_information.append({'count': amount_of_osds,
+                                             'slot_id': slot_id,
+                                             'osd_type': 'ASD',
+                                             'alba_backend_guid': alba_backend_guid})
+                    node_slot_information[alba_node_guid] = slot_information
+        for alba_node_guid, slot_information in node_slot_information.iteritems():
+            BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(slot_information, alba_node_guid))
+            BackendSetup._fill_slots(alba_node_guid=alba_node_guid, slot_information=slot_information, api=api)
 
         # Local stack should sync with the new disks
         BackendSetup.LOGGER.info('Sleeping for {0} seconds to let local stack sync.'.format(BackendSetup.LOCAL_STACK_SYNC))
         time.sleep(BackendSetup.LOCAL_STACK_SYNC)
 
         # Restarting iteration to avoid too many local stack calls:
-        local_stack = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=api)
-        asd_queue = {}
+        node_osds_to_claim = {}
         for disk, amount_of_osds in disks.iteritems():
             disk_object = AlbaNodeHelper.get_disk_by_ip(ip=target, diskname=disk)
             # Get the name of the disk out of the path
-            disk_path = BackendHelper.get_local_stack_alias(disk_object)
+            slot_id = BackendHelper.get_local_stack_alias(disk_object)
             for alba_node_id, alba_node_guid in node_mapping.iteritems():
-                # Check if the alba_node_id has the disk
-                if disk_path in local_stack['local_stack'][alba_node_id]:
-                    # Claim asds
-                    for asd_id, asd_info in local_stack['local_stack'][alba_node_id][disk_path]['asds'].iteritems():
-                        # If the asd is not available, fetch local_stack again after 5s to wait for albamgr to claim it
-                        current_retry = 0
-                        while asd_info['status'] != 'available':
-                            current_retry += 1
-                            BackendSetup.LOGGER.info('ASD {0} for Alba node {1} was not available. Waiting 5 seconds'
-                                                     ' to retry (currently {2} retries left).'.format(asd_id, alba_node_id, claim_retries - current_retry))
-                            if current_retry >= claim_retries:
-                                raise RuntimeError('ASD {0} for Alba node {1} did come available after {2} seconds'.format(asd_id, alba_node_id, current_retry * 5))
-                            time.sleep(5)
-                            local_stack = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=api)
-                            asd_info = local_stack['local_stack'][alba_node_id][disk_path]['asds'][asd_id]
-                        BackendSetup.LOGGER.info('Adding asd {0} for disk {1} to claim queue'.format(asd_id,
-                                                                                                     local_stack[
-                                                                                                         'local_stack'][
-                                                                                                         alba_node_id][
-                                                                                                         disk_path][
-                                                                                                         'guid']))
-                        asd_queue[asd_id] = local_stack['local_stack'][alba_node_id][disk_path]['guid']
-        if len(asd_queue.keys()) != 0:
-            BackendSetup.LOGGER.info('Posting asd queue {0}'.format(asd_queue))
-            BackendSetup._claim_asd(
-                alba_backend_name=albabackend_name,
-                api=api,
-                queue=asd_queue
-            )
-        else:
-            BackendSetup.LOGGER.info('No asds have to claimed for {0}'.format(albabackend_name))
+                albanode = AlbaNodeHelper.get_albanode(alba_node_guid)
+                # Claim asds
+                if slot_id not in albanode.stack:
+                    continue
+                osds = albanode.stack[slot_id]['osds']
+                for osd_id, osd_info in osds.iteritems():
+                    # If the asd is not available, fetch local_stack again after 5s to wait for albamgr to claim it
+                    current_retry = 0
+                    while osd_info['status'] not in ['available', 'ok']:
+                        current_retry += 1
+                        BackendSetup.LOGGER.info('ASD {0} for Alba node {1} was not available. Waiting 5 seconds '
+                                                 'to retry (currently {2} retries left).'.format(osd_id, alba_node_id, claim_retries - current_retry))
+                        if current_retry >= claim_retries:
+                            raise RuntimeError('ASD {0} for Alba node {1} did come available after {2} seconds'.format(osd_id, alba_node_id, current_retry * 5))
+                        time.sleep(5)
+                        albanode.invalidate_dynamics('stack')
+                        osd_info = albanode.stack[slot_id][osd_id]
+                    BackendSetup.LOGGER.info('Adding asd {0} for slot {1} to claim queue'.format(osd_id, slot_id))
+                    osds_to_claim = node_osds_to_claim.get(alba_node_guid, [])
+                    osds_to_claim.append({'osd_type': 'ASD',
+                                          'ips': osd_info['ips'],
+                                          'port': osd_info['port'],
+                                          'slot_id': slot_id})
+                    node_osds_to_claim[alba_node_guid] = osds_to_claim
+        for alba_node_guid, osds_to_claim in node_osds_to_claim.iteritems():
+            BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(osds_to_claim, alba_node_guid))
+            BackendSetup._claim_osds(alba_backend_name=albabackend_name, alba_node_guid=alba_node_guid, osds=osds_to_claim, api=api)
 
     @staticmethod
     def _discover_and_register_nodes(api):
@@ -348,71 +330,63 @@ class BackendSetup(object):
                        )
 
     @staticmethod
-    def _initialize_disk(alba_node_guid, api, timeout=INITIALIZE_DISK_TIMEOUT, diskname=None, amount_of_osds=None,
-                         queue=None):
+    def _fill_slots(alba_node_guid, api, slot_information, timeout=INITIALIZE_DISK_TIMEOUT):
         """
         Initializes a disk to create osds
         :param alba_node_guid:
-        :param diskname:
-        :param amount_of_osds:
         :param api: specify a valid api connection to the setup
         :type api: helpers.api.OVSClient
         :param timeout: timeout counter in seconds
-        :param queue: queue of disks
-        :type queue: dict
+        :param slot_information: list of slots to fill
+        :type slot_information: list
         :type timeout: int
         :return:
         """
-        if queue is None and (diskname and amount_of_osds is not None):
-            queue = {'disks': {diskname: amount_of_osds}}
+        data = {'slot_information': slot_information}
 
-        data = {'disks': queue}
         task_guid = api.post(
-            api='/alba/nodes/{0}/initialize_disks/'.format(alba_node_guid),
+            api='/alba/nodes/{0}/fill_slots/'.format(alba_node_guid),
             data=data
         )
         task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
         if not task_result[0]:
-            error_msg = "Initialize disk `{0}` for alba node `{1}` has failed".format(queue, alba_node_guid)
+            error_msg = "Initialize disk `{0}` for alba node `{1}` has failed".format(data, alba_node_guid)
             BackendSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            BackendSetup.LOGGER.info("Successfully initialized '{0}'".format(queue))
+            BackendSetup.LOGGER.info("Successfully initialized '{0}'".format(data))
             return task_result[0]
 
     @staticmethod
-    def _claim_asd(alba_backend_name, api, timeout=CLAIM_ASD_TIMEOUT, asd_id=None, disk_guid=None, queue=None):
+    def _claim_osds(alba_backend_name, alba_node_guid, osds, api, timeout=CLAIM_ASD_TIMEOUT):
         """
         Claims a asd
         :param alba_backend_name: backend name
         :type alba_backend_name: str
-        :param asd_id: id of the asd
-        :type asd_id: str
-        :param disk_guid: guid of the disk
-        :type disk_guid: str
+        :param alba_node_guid: guid of the alba node on which the osds are available
+        :type alba_node_guid: str
+        :param osds: list of osds to claim
+        :type osds: list
         :param api: specify a valid api connection to the setup
         :type api: helpers.api.OVSClient
         :param timeout: timeout counter in seconds
         :type timeout: int
-        :param queue: queue of asds
-        :type queue: dict
         :return:
         """
-        if queue is None and (asd_id and disk_guid is not None):
-            queue = {asd_id: disk_guid}
-        data = {'osds': queue}
+        data = {'alba_node_guid': alba_node_guid,
+                'osds': osds}
         task_guid = api.post(
-            api='/alba/backends/{0}/add_units/'.format(BackendHelper.get_alba_backend_guid_by_name(alba_backend_name)),
+            api='/alba/backends/{0}/add_osds/'.format(BackendHelper.get_alba_backend_guid_by_name(alba_backend_name)),
             data=data
         )
         task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Claim ASD `{0}` for alba backend `{1}` has failed with error '{2}'".format(queue, alba_backend_name, task_result[1])
+            error_msg = "Claim ASD `{0}` for alba backend `{1}` has failed with error '{2}'".format(osds, alba_backend_name, task_result[1])
             BackendSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            BackendSetup.LOGGER.info("Succesfully claimed '{0}'".format(queue))
+            BackendSetup.LOGGER.info("Succesfully claimed '{0}'".format(osds))
             return task_result[0]
 
     @staticmethod

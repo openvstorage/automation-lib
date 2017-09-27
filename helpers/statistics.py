@@ -13,7 +13,7 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 
 
@@ -21,7 +21,7 @@ class StatisticsHelper(object):
     """
     Statistics Helper class
     """
-    LOGGER = LogHandler.get(source='helpers', name="ci_statistics")
+    LOGGER = Logger("helpers-ci_statistics")
 
     def __init__(self):
         pass
