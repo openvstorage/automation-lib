@@ -72,6 +72,7 @@ class OVSClient(object):
     disable_warnings(InsecureRequestWarning)
     disable_warnings(SNIMissingWarning)
 
+
     def __init__(self, ip, username, password, verify=False, version='*', port=None, raw_response=False):
         """
         Initializes the object with credentials and connection information
@@ -185,6 +186,7 @@ class OVSClient(object):
             else:
                 raise HttpException(status_code, message)
 
+
     def _call(self, api, params, func, **kwargs):
         if not api.endswith('/'):
             api = '{0}/'.format(api)
@@ -193,17 +195,17 @@ class OVSClient(object):
         if self._volatile_client is not None:
             self._token = self._volatile_client.get(self._key)
         first_connect = self._token is None
-        headers, url = self._prepare(params=params)
+        headers, _url = self._prepare(params=params)
         try:
-            return self._process(func(url=url.format(api), headers=headers, verify=self._verify, **kwargs))
+            return self._process(func(url=_url.format(api), headers=headers, verify=self._verify, **kwargs))
         except ForbiddenException:
             if self._volatile_client is not None:
                 self._volatile_client.delete(self._key)
             if first_connect is True:  # First connect, so no token was present yet, so no need to try twice without token
                 raise
             self._token = None
-            headers, url = self._prepare(params=params)
-            return self._process(func(url=url.format(api), headers=headers, verify=self._verify, **kwargs))
+            headers, _url = self._prepare(params=params)
+            return self._process(func(url=_url.format(api), headers=headers, verify=self._verify, **kwargs))
         except Exception:
             if self._volatile_client is not None:
                 self._volatile_client.delete(self._key)
@@ -264,7 +266,6 @@ class OVSClient(object):
             if timeout is not None and timeout < (time.time() - start):
                 raise TimeOutError('Waiting for task {0} has timed out.'.format(task_id))
             task_metadata = self.get('/tasks/{0}/'.format(task_id))
-            print task_metadata
             finished = task_metadata['status'] in ('FAILURE', 'SUCCESS')
             if finished is False:
                 if task_metadata != previous_metadata:
