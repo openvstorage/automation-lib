@@ -1,4 +1,4 @@
-ci          opt/OpenvStorage/ci
+ci          opt/OpenvStorage/ci/
 helpers     opt/OpenvStorage/ci/api_lib/
 setup       opt/OpenvStorage/ci/api_lib/
 remove      opt/OpenvStorage/ci/api_lib/
