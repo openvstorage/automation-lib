@@ -286,8 +286,6 @@ class OVSClient(object):
         :return: json data
         :rtype: string
         """
-        try:
-            json_object = json.loads(str(dict_or_json))
-        except ValueError:
+        if isinstance(dict_or_json, dict):
             return json.dumps(dict_or_json)
-        return json_object
+        return dict_or_json
