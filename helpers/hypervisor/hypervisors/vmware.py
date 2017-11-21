@@ -73,7 +73,7 @@ class VMware(object):
         :param force: remove vm with the same name or used disks
         :return:
         """
-        return None
+        raise NotImplementedError
 
     def clone_vm(self, vmid, name, disks, mountpoint, wait=False):
         """

@@ -1,3 +1,0 @@
-#!/bin/bash
-
-touch /opt/OpenvStorage/ci/__init__.py

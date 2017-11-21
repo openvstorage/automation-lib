@@ -783,14 +783,15 @@ class Sdk(object):
         self.ssh_client.run(["genisoimage", "-output", ci_iso, "-volid", "cidata", "-joliet", "-r", user_data, meta_data])
 
         # Create extra disks
-        extra_disks = []
+        all_disks = [{'mountpoint': boot_disk, "format": "qcow2", "bus": "virtio"}]
+
         if amount_disks > 0 and size > 0:
             if not self.ssh_client.dir_exists(mountpoint):
                 raise Exception("Directory {0} doesn't exists.".format(mountpoint))
 
             for i in xrange(1, amount_disks+1):
-                disk_path = "%s/%s_%02d.qcow2" % (mountpoint, name, i,)
-                exists, used_disk, vm_name = self._check_disks_in_use(disk_path)
+                disk_path = "{0}/{1}_{2:02d}.qcow2".format(mountpoint, name, i,)
+                exists, used_disk, vm_name = self._check_disks_in_use([disk_path])
                 disk_exists_filesystem = self.ssh_client.file_exists(disk_path)
                 if disk_exists_filesystem and exists:
                     raise Exception("Virtual Disk {0} in used by {1}".format(used_disk, vm_name))
@@ -798,19 +799,14 @@ class Sdk(object):
                     self.ssh_client.file_delete(disk_path)
 
                 self.ssh_client.run(['qemu-img', 'create', '-f', 'qcow2', disk_path, size])
-                extra_disks.append(disk_path)
-
-        all_disks = [{'mountpoint': boot_disk, "format": "qcow2", "bus": "virtio"}]
-
-        for extra_disk in extra_disks:
-            all_disks.append({'mountpoint': extra_disk, "format": "qcow2", "bus": "virtio"})
+                all_disks.append({'mountpoint': disk_path, "format": "qcow2", "bus": "virtio"})
 
         self.create_vm(name=name, vcpus=vcpus, ram=ram, disks=all_disks, cdrom_iso=ci_iso,
                        networks=[{"bridge": bridge, "model": "virtio"}], start=True)
 
     def _check_disks_in_use(self, disk_paths):
         """
-            check if disks are in used
+        Check if disks are in used
         :param disks: list of disk paths
         :type disks: list
         :return: bool
@@ -823,8 +819,13 @@ class Sdk(object):
                     continue
                 used_disk = disk.find('source').get('file')
                 if used_disk in disk_paths:
-                    return True, used_disk, dom_info.find('name').text
-                    raise Exception("Virtual Disk {0} in used by {1}".format(used_disk, dom_info.find('name').text))
+                    try:
+                        return True, used_disk, dom_info.find('name').text
+                    except AttributeError as ex:
+                        msg = "Error during checking of VM's disks. Got {0}".format(str(ex))
+                        logger.exception(msg)
+                        return True, used_disk, 'Unknown vm name'
+
         return False, '', ''
 
     @staticmethod
