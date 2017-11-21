@@ -674,8 +674,28 @@ class Sdk(object):
             print ' '.join(command+options)
             raise RuntimeError(msg)
 
-    def create_vm_from_cloud_init(self, name, vcpus, ram, bridge, ip, netmask, gateway, nameserver, amount_disks, size,
+    def create_vm_from_cloud_init(self, name, vcpus, ram, boot_disk_size, bridge, ip, netmask, gateway, nameserver, amount_disks, size,
                                   mountpoint, cloud_init_url, cloud_init_name, root_password, force=False):
+        """
+        Create vm from cloud init
+        :param name: Name of the vm
+        :param vcpus: amount of vcpus
+        :param ram: amount of ram (MB)
+        :param boot_disk_size: size of the boot disks (notation xGB)
+        :param bridge: network bridge name
+        :param ip: ip of the vm
+        :param netmask: netmask
+        :param gateway: gateway
+        :param nameserver: dns ip
+        :param amount_disks: amount of extra disks
+        :param size: size of the extra disks (notation xGB)
+        :param mountpoint: where the extra disks should be created
+        :param cloud_init_url: cloud init url
+        :param cloud_init_name: vmdk template name
+        :param root_password: root password of the vm
+        :param force: remove vm with the same name or used disks
+        :return:
+        """
 
         template_directory = '/var/lib/libvirt/images'
         vmdk_file = "{0}/{1}.vmdk".format(template_directory, cloud_init_name)
@@ -692,7 +712,6 @@ class Sdk(object):
         meta_data = "{0}/meta-data".format(vm_directory)
         ci_iso = "{0}/{1}.iso".format(vm_directory, name)
         boot_disk = "{0}/{1}.qcow2".format(vm_directory, name)
-        boot_disk_size = "30G"
 
         meta_data_lines = [
             'instance-id: {0}'.format(uuid.uuid1()),
