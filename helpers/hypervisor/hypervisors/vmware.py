@@ -51,6 +51,31 @@ class VMware(object):
                 return task_info.info.result.value
         return None
 
+    def create_vm_from_cloud_init(self, name, vcpus, ram, bridge, ip, netmask, gateway, nameserver, amount_disks, size,
+                                  mountpoint, cloud_init_url, cloud_init_name, root_password, force=False):
+        """
+        create vm from cloud init
+        :param name: name of the vm
+        :param vcpus: amount of vCPUs
+        :param ram: amount of ram
+        :param bridge: network bridge
+        :param ip: ip address
+        :param netmask: netmask
+        :param gateway: gateway
+        :param nameserver: nameserver
+        :param amount_disks: amount of extra disks
+        :param size: the size of the extra disks
+        :param mountpoint: mountpoint where the extra disks will be stored
+        :param cloud_init_url: cloud init url
+        :param cloud_init_name: cloud init name
+        :param root_password: root password of the vm
+        :param force: force delete existing vms with this name
+        :return:
+        """
+        return self.sdk.create_vm_from_cloud_init(name, vcpus, ram, bridge, ip, netmask, gateway, nameserver,
+                                                  amount_disks, size, mountpoint, cloud_init_url, cloud_init_name,
+                                                  root_password, force)
+
     def clone_vm(self, vmid, name, disks, mountpoint, wait=False):
         """
         Clone a vmachine
