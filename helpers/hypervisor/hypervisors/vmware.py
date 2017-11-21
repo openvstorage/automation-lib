@@ -73,9 +73,7 @@ class VMware(object):
         :param force: remove vm with the same name or used disks
         :return:
         """
-        return self.sdk.create_vm_from_cloud_init(name, vcpus, ram, boot_disk_size, bridge, ip, netmask, gateway, nameserver,
-                                                  amount_disks, size, mountpoint, cloud_init_url, cloud_init_name,
-                                                  root_password, force)
+        return None
 
     def clone_vm(self, vmid, name, disks, mountpoint, wait=False):
         """
