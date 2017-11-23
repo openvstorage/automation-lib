@@ -13,6 +13,8 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
+
+from ci.scenario_helpers.ci_constants import CIConstants
 from subprocess import check_output
 from ovs.extensions.generic.logger import Logger
 from ..helpers.fstab import FstabHelper
@@ -20,7 +22,7 @@ from ..helpers.storagerouter import StoragerouterHelper
 from ..setup.roles import RoleSetup
 
 
-class RoleRemover(object):
+class RoleRemover(CIConstants):
 
     LOGGER = Logger("remove-ci_role_remover")
     CONFIGURE_DISK_TIMEOUT = 300
@@ -56,27 +58,26 @@ class RoleRemover(object):
             RoleRemover.LOGGER.exception('Unable to remove filesystem of {0}'.format(alias_part_label))
             raise RuntimeError('Could not remove filesystem of {0}'.format(alias_part_label))
 
-    @staticmethod
-    def remove_role(ip, diskname, api):
-        allowed_roles = ['WRITE', 'READ', 'SCRUB', 'DB']
+    @classmethod
+    def remove_role(cls, storagerouter_ip, diskname):
+        allowed_roles = ['WRITE', 'DTL', 'SCRUB', 'DB']
         RoleRemover.LOGGER.info("Starting removal of disk roles.")
-
         # Fetch information
-        storagerouter_guid = StoragerouterHelper.get_storagerouter_guid_by_ip(ip)
-        disk = StoragerouterHelper.get_disk_by_ip(ip, diskname)
+        storagerouter = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip=storagerouter_ip)
+        disk = StoragerouterHelper.get_disk_by_guid(guid=storagerouter.guid, diskname=diskname)
         # Check if there are any partitions on the disk, if so check if there is enough space
         if len(disk.partitions) > 0:
             for partition in disk.partitions:
                 # Remove all partitions that have roles
                 if set(partition.roles).issubset(allowed_roles) and len(partition.roles) > 0:
                     RoleRemover.LOGGER.info("Removing {0} from partition {1} on disk {2}".format(partition.roles, partition.guid, diskname))
-                    RoleSetup.configure_disk(storagerouter_guid=storagerouter_guid,
+                    RoleSetup.configure_disk(storagerouter_guid=storagerouter.guid,
                                              disk_guid=disk.guid,
                                              offset=partition.offset,
                                              size=disk.size,
                                              roles=[],
-                                             api=api,
                                              partition_guid=partition.guid)
+
                     # Unmount partition
                     RoleRemover.LOGGER.info("Umounting disk {2}".format(partition.roles, partition.guid, diskname))
                     RoleRemover._umount(partition.mountpoint)
@@ -92,6 +93,8 @@ class RoleRemover(object):
                     RoleRemover.LOGGER.info("Removing partition {0} on disk {1} from model".format(partition.guid, diskname))
                     partition.delete()
                 else:
-                    RoleRemover.LOGGER.info("Found no roles on partition {1} on disk {2}".format(partition.roles, partition.guid, diskname))
+                    print 'Found no roles on partition'
+                    RoleRemover.LOGGER.info("{1} on disk {2}".format(partition.roles, partition.guid, diskname))
         else:
+            print 'found no partition'
             RoleRemover.LOGGER.info("Found no partition on the disk.")
