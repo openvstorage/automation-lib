@@ -336,3 +336,39 @@ class BackendRemover(CIConstants):
             BackendRemover.LOGGER.info("Unlinking backend `{0}` from global backend `{1}` should have succeeded"
                                      .format(albabackend_name, globalbackend_name))
             return task_result[0]
+
+
+    @classmethod
+    #@required_backend
+    def unlink_backend(cls, globalbackend_name, albabackend_name, timeout=UNLINK_BACKEND_TIMEOUT):
+        """
+        Link a LOCAL backend to a GLOBAL backend
+
+        :param globalbackend_name: name of a GLOBAL alba backend
+        :type globalbackend_name: str
+        :param albabackend_name: name of a backend to unlink
+        :type albabackend_name: str
+        :param timeout: timeout counter in seconds
+        :type timeout: int
+        :return:
+        """
+        data = {
+            "linked_guid": BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
+        }
+
+        task_guid = cls.api.post(
+            api='/alba/backends/{0}/unlink_alba_backends'
+                .format(BackendHelper.get_alba_backend_guid_by_name(globalbackend_name)),
+            data=data
+        )
+
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
+        if not task_result[0]:
+            error_msg = "Unlinking backend `{0}` from global backend `{1}` has failed with error '{2}'".format(
+                albabackend_name, globalbackend_name, task_result[1])
+            BackendRemover.LOGGER.error(error_msg)
+            raise RuntimeError(error_msg)
+        else:
+            BackendRemover.LOGGER.info("Unlinking backend `{0}` from global backend `{1}` should have succeeded"
+                                     .format(albabackend_name, globalbackend_name))
+            return task_result[0]
