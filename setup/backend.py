@@ -328,13 +328,11 @@ class BackendSetup(CIConstants):
         :return:
         """
         data = {'slot_information': slot_information}
-        print '_fill_slots: data: ', data
         task_guid = cls.api.post(
             api='/alba/nodes/{0}/fill_slots/'.format(alba_node_guid),
             data=data
         )
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
-        print 'fill_slots', task_result
         if not task_result[0]:
             error_msg = "Initialize disk `{0}` for alba node `{1}` has failed".format(data, alba_node_guid)
             BackendSetup.LOGGER.error(error_msg)

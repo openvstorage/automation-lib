@@ -18,7 +18,6 @@ from ..helpers.disk import DiskHelper
 from ..helpers.storagerouter import StoragerouterHelper
 
 
-
 class RoleValidation(object):
 
     LOGGER = Logger("validate-ci_role_validate")
