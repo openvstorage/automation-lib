@@ -13,11 +13,12 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ci.scenario_helpers.ci_constants import CIConstants
+
 from ovs.dal.hybrids.vdisk import VDisk
 from ovs.dal.lists.vdisklist import VDiskList
 from ovs.dal.lists.vpoollist import VPoolList
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 from ..helpers.exceptions import VPoolNotFoundError, VDiskNotFoundError
 
 

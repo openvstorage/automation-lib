@@ -14,10 +14,11 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import time
-from ci.scenario_helpers.ci_constants import CIConstants
+
 from ovs.extensions.generic.logger import Logger
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
+from ..helpers.ci_constants import CIConstants
 from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_preset, \
     check_linked_backend, filter_osds
 
@@ -216,6 +217,7 @@ class BackendSetup(CIConstants):
                                              'slot_id': slot_id,
                                              'osd_type': 'ASD',
                                              'alba_backend_guid': alba_backend_guid})
+
                     node_slot_information[alba_node_guid] = slot_information
         for alba_node_guid, slot_information in node_slot_information.iteritems():
             BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(slot_information, alba_node_guid))
@@ -326,12 +328,13 @@ class BackendSetup(CIConstants):
         :return:
         """
         data = {'slot_information': slot_information}
-
+        print '_fill_slots: data: ', data
         task_guid = cls.api.post(
             api='/alba/nodes/{0}/fill_slots/'.format(alba_node_guid),
             data=data
         )
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
+        print 'fill_slots', task_result
         if not task_result[0]:
             error_msg = "Initialize disk `{0}` for alba node `{1}` has failed".format(data, alba_node_guid)
             BackendSetup.LOGGER.error(error_msg)
@@ -388,6 +391,7 @@ class BackendSetup(CIConstants):
         :type timeout: int
         :return:
         """
+
         local_albabackend = BackendHelper.get_albabackend_by_name(albabackend_name)
 
         data = {

@@ -13,10 +13,10 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ci.scenario_helpers.ci_constants import CIConstants
 from ovs.extensions.generic.logger import Logger
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
+from ..helpers.ci_constants import CIConstants
 from ..validate.decorators import required_backend, required_preset
 
 

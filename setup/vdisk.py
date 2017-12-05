@@ -14,8 +14,8 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ci.scenario_helpers.ci_constants import CIConstants
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 from ..helpers.storagerouter import StoragerouterHelper
 from ..helpers.vdisk import VDiskHelper
 from ..helpers.vpool import VPoolHelper
@@ -36,7 +36,7 @@ class VDiskSetup(CIConstants):
         pass
 
     @classmethod
-    def create_snapshot(snapshot_name, vdisk_name, vpool_name, consistent=True, sticky=True,
+    def create_snapshot(cls, snapshot_name, vdisk_name, vpool_name, consistent=True, sticky=True,
                         timeout=CREATE_SNAPSHOT_TIMEOUT):
         """
         Create a new snapshot for a vdisk
@@ -224,7 +224,7 @@ class VDiskSetup(CIConstants):
 
     @classmethod
     @required_vdisk
-    def set_vdisk_as_template(vdisk_name, vpool_name, timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT):
+    def set_vdisk_as_template(cls, vdisk_name, vpool_name, timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT):
         """
         Create a new vDisk on a certain vPool/storagerouter
         Set a existing vDisk as vTemplate

@@ -14,6 +14,9 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import inspect
+from ovs.extensions.generic.sshclient import SSHClient
+from ovs.extensions.generic.system import System
+
 
 class FstabHelper():
     """
@@ -43,6 +46,9 @@ class FstabHelper():
         def __eq__(self, o):
             return str(self) == str(o)
 
+        def __ne__(self, o):
+            return str(self) != str(o)
+
         def __str__(self):
             return "{} {} {} {} {} {}".format(self.device, self.mountpoint, self.filesystem, self.options, self.d, self.p)
 
@@ -70,11 +76,19 @@ class FstabHelper():
 
     _path = DEFAULT_PATH
 
-    def __init__(cls, path=None):
+    def __init__(self, path=None, client=None):
+        """
+
+        :param path: path of the fstab file
+        :type path: str
+        """
         if path:
-            cls._path = path
+            self._path = path
         else:
-            cls._path = cls.DEFAULT_PATH
+            self._path = self.DEFAULT_PATH
+        if client is None:
+            client = SSHClient(System.get_my_storagerouter(), username='root')
+        self.client = client
 
 
     @staticmethod
@@ -87,58 +101,48 @@ class FstabHelper():
         """
         return FstabHelper.Entry(*filter(lambda x: x not in ('',' ', None), str(line).strip("\n").split(" ")))
 
-    @classmethod
-    def get_entry_by_attr(cls, attr, value):
+    def get_entry_by_attr(self, attr, value):
         """
-        Returns an entry with where a attr has a specific value
+        Returns an entry with where an attr has a specific value
         :param attr: attribute from the entry
         :param value: value that the attribute should have
         :return:
         """
-
         entries = []
-        with open(cls._path, 'r') as fh:
-            for line in fh:
-                try:
-                    if not line.startswith("#") and line.strip() is not '':
-                        entries.append(cls._hydrate_entry(line))
-                except ValueError:
-                    pass
-
+        for line in self.client.file_read(self._path).strip().splitlines():
+            try:
+                if not line.startswith("#") and line.strip() is not '':
+                    entries.append(self._hydrate_entry(line))
+            except ValueError:
+                pass
         for entry in entries:
             e_attr = entry.get(attr)
             if e_attr == value:
                 return entry
         return None
 
-    @classmethod
-    def remove_entry(cls, entry):
+    def remove_entry(self, entry):
         """
         Removes a line from fstab
         :param entry:entry object
         :return:
         """
-        with open(cls._path, 'r+') as fh:
-            d = fh.readlines()
-            fh.seek(0)
-            for line in d:
-                if line.strip() != entry and not line.startswith('#'):
-                    fh.write(line)
-            fh.truncate()
+        lines = self.client.file_read(self._path).strip().splitlines()
+        lines = [line for line in lines if not line.startswith('#') and self._hydrate_entry(line) != entry]
+        self.client.file_write(self._path, '\n'.join(lines))
 
-    @classmethod
-    def remove_by_mountpoint(cls, mountpoint):
+    def remove_by_mountpoint(self, mountpoint, client=None):
         """
         Removes an entry by specific mountpoint
         :param mountpoint: mountpoint
         :return:
         """
-        entry = cls.get_entry_by_attr('mountpoint', mountpoint)
-        if entry:
-            cls.remove_entry(entry)
 
-    @classmethod
-    def add(cls, device, mountpoint, filesystem, options=None, dump=None, pass_=None):
+        entry = self.get_entry_by_attr('mountpoint', mountpoint)
+        if entry:
+            self.remove_entry(entry)
+
+    def add(self, device, mountpoint, filesystem, options=None, dump=None, pass_=None):
         """
         Adds a entry based on supplied params
         :param device: devicename eg /dev/sda
@@ -149,5 +153,6 @@ class FstabHelper():
         :param pass_: order to check filesystem at reboot time
         :return:
         """
-        with open(cls._path, 'a+') as fh:
-            fh.write(str(FstabHelper.Entry(device, mountpoint, filesystem, options, dump))+'\n')
+        lines = self.client.file_read(self._path).strip().splitlines()
+        lines.append(str(FstabHelper.Entry(device, mountpoint, filesystem, options, dump)))
+        self.client.file_write(self._path, '\n'.join(lines))

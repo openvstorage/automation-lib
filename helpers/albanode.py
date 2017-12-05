@@ -13,10 +13,11 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ci.scenario_helpers.ci_constants import CIConstants
+
 from ovs.dal.hybrids.albanode import AlbaNode
 from ovs.dal.lists.albanodelist import AlbaNodeList
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 
 
 class AlbaNodeHelper(CIConstants):
@@ -32,6 +33,7 @@ class AlbaNodeHelper(CIConstants):
         """
         Will map the alba_node_id with its guid counterpart and return the map dict
         """
+
         mapping = {}
         options = {
             'contents': 'node_id,_relations',

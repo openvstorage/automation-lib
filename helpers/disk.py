@@ -87,8 +87,8 @@ class DiskHelper(object):
         :return: list of roles of all partitions on a certain disk
         :rtype: list
         """
-
         disk = DiskHelper.get_disk_by_diskname(storagerouter_guid, disk_name)
+
         roles_on_disk = []
         if disk:
             for diskpartition in disk.partitions:

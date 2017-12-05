@@ -14,10 +14,10 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ci.scenario_helpers.ci_constants import CIConstants
-from ovs.dal.lists.storagerouterlist import StorageRouterList
 from ovs.dal.hybrids.storagerouter import StorageRouter
+from ovs.dal.lists.storagerouterlist import StorageRouterList
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 
 
 class StoragerouterHelper(CIConstants):
@@ -64,9 +64,9 @@ class StoragerouterHelper(CIConstants):
         return StorageRouter(storagerouter_guid).ip
 
     @staticmethod
-    def get_disk_by_guid(guid, diskname):
+    def get_disk_by_name(guid, diskname):
         """
-        Fetch a disk by its ip and name
+        Fetch a disk by its guid and name
 
         :param guid: guid of a storagerouter
         :type guid: str

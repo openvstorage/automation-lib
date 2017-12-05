@@ -14,8 +14,8 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ci.scenario_helpers.ci_constants import CIConstants
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 from ..helpers.storagerouter import StoragerouterHelper
 from ..validate.decorators import check_role_on_disk
 
@@ -50,7 +50,7 @@ class RoleSetup(CIConstants):
 
         # Fetch information
         storagerouter_guid = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid
-        disk = StoragerouterHelper.get_disk_by_guid(storagerouter_guid, diskname)
+        disk = StoragerouterHelper.get_disk_by_name(storagerouter_guid, diskname)
         # Check if there are any partitions on the disk, if so check if there is enough space
         unused_partitions = []
         if len(disk.partitions) > 0:

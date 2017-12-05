@@ -14,8 +14,8 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ci.scenario_helpers.ci_constants import CIConstants
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 from ..helpers.vdisk import VDiskHelper
 from ..validate.decorators import required_vtemplate
 
@@ -44,9 +44,9 @@ class VDiskRemover(CIConstants):
                 continue
             if len(vdisk.child_vdisks_guids) > 0:
                 for vdisk_child_guid in vdisk.child_vdisks_guids:
-                    VDiskRemover.remove_vdisk(vdisk_child_guid, api)
+                    VDiskRemover.remove_vdisk(vdisk_child_guid)
                     removed_guids.append(vdisk_child_guid)
-            VDiskRemover.remove_vdisk(vdisk.guid, api, timeout)
+            VDiskRemover.remove_vdisk(vdisk.guid, timeout)
             removed_guids.append(vdisk.guid)
 
     @classmethod

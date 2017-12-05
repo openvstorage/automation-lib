@@ -14,9 +14,9 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ci.scenario_helpers.ci_constants import CIConstants
 from ovs.extensions.generic.logger import Logger
 from ..helpers.backend import BackendHelper
+from ..helpers.ci_constants import CIConstants
 from ..helpers.domain import DomainHelper
 from ..helpers.storagerouter import StoragerouterHelper
 from ..validate.decorators import required_backend
@@ -34,11 +34,10 @@ class DomainSetup(CIConstants):
         """
         Add a new (recovery) domain to the cluster
 
-        :param domain_name: name of a new domain
+        :param domain_name: name of a new domain to add
         :type domain_name: str
         :return:
         """
-
         # check if domain already exists
         if not DomainHelper.get_domain_by_name(domain_name):
             data = {"name": domain_name}
