@@ -18,42 +18,14 @@ import json
 from ci.autotests import AutoTests
 from ovs.dal.hybrids.albabackend import AlbaBackend
 from ovs.dal.hybrids.diskpartition import DiskPartition
+from ovs.extensions.storageserver.storagedriver import StorageDriverClient
 from ovs.lib.helpers.toolbox import Toolbox
-
 
 
 class SetupJsonGenerator(object):
     """
-    Class to automate construction of a setup.json file.
-    Attributes:
-        prop config
-        def dump_json_to_file
-        def def update_scenarios
-        def update_ci
-        def add_hypervisor
-        def remove_hypervisor
-
-        def add_domain
-        def remove_domain
-
-        def add_storagerouter
-        def remove_storagerouter
-        def add_disk_to_sr
-        def remove_disk_from_sr
-        def add_domain_to_sr
-        def remove_domain_from_sr
-
-        def add_backend
-        def remove_backend
-        def add_preset_to_backend
-        def remove_preset_to_backend
-        def add_osd_to_backend
-
-        def add_vpool
-        def remove_vpool
-
-        def change_cache
-
+    This provides class provides code to automate construction of a setup.json file.
+    Addition and removal of several components of the setup.json is provided
     """
     HYPERV_KVM = 'KVM'
     VPOOL_COUNTER = 1
@@ -86,7 +58,8 @@ class SetupJsonGenerator(object):
     def update_scenarios(self, scenarios=None):
         """
         Add scenarios to be scheduled in the setup.
-        :param scenarios:
+        :param scenarios: scenarios to add to the 'scenarios' section of the setup.json.
+                            If left blank, by default all scenarios will be scheduled.
         :type scenarios: list
         """
         if not isinstance(scenarios, list) and scenarios is not None:
@@ -101,64 +74,55 @@ class SetupJsonGenerator(object):
 
             self.config['scenarios'] = scenarios
 
-    def update_ci(self, passed_required_params, passed_optional_params=None):
+    def update_ci(self, ci_params):
         """
         Set the ci constants of the setup file accordign to the passed parameters.
         :param passed_required_params: obligatory parameters for the setup file
         :type passed_required_params: dict
         :param passed_optional_params: optional parameters
         :type passed_optional_params: dict
-
         """
-        required_params_layout = {'setup': (bool, None, True),
-                                  'grid_ip': (str, Toolbox.regex_ip, True)}
+        params_layout = {'setup': (bool, None, True),
+                         'grid_ip': (str, Toolbox.regex_ip, True),
+                         'validation': (bool, None, False),
+                         'cleanup': (bool, None, False),
+                         'send_to_testrail': (bool, None, False),
+                         'fail_on_failed_scenario': (bool, None, False),
+                         'scenarios': (bool, None, False),
+                         'scenario_retries': (int, {'min': 1}, False),
+                         'version': (str, ['andes', 'unstable', 'fargo', 'develop'], False),
+                         'config_manager': (str, 'arakoon', False)}
 
-        default_params = {'validation': False,
-                          'cleanup': False,
-                          'send_to_testrail': True,
-                          'fail_on_failed_scenario': True,
-                          'scenarios': True,
-                          'version': 'andes',
-                          'config_manager': 'arakoon'}
+        all_params = {'validation': False,
+                      'cleanup': False,
+                      'send_to_testrail': True,
+                      'fail_on_failed_scenario': True,
+                      'scenarios': True,
+                      'scenario_retries': 1,
+                      'version': 'andes',
+                      'config_manager': 'arakoon'}
 
-        if passed_optional_params is None:
-            passed_optional_params = {}
+        all_params.update(ci_params)
+        Toolbox.verify_required_params(required_params=params_layout, actual_params=all_params, verify_keys=True)
 
-        for key, value in default_params.iteritems():
-            if key not in passed_optional_params.keys():
-                passed_optional_params[key] = value
+        if os.system('ping -c 1 {}'.format(all_params['grid_ip'])) != 0:
+            raise ValueError('No response from ip {0}'.format(all_params['grid_ip']))
 
-        optional_params_layout = {'validation': (bool, None, False),
-                                  'cleanup': (bool, None, False),
-                                  'send_to_testrail': (bool, None, False),
-                                  'fail_on_failed_scenario': (bool, None, False),
-                                  'setup_retries': (int, {'min': 1}, False),
-                                  'scenarios': (bool, None, False),
-                                  'scenario_retries': (int, {'min': 1}, False),
-                                  'version': (str, ['andes', 'unstable', 'fargo', 'develop'], False),
-                                  'config_manager': (str, 'arakoon', False)}
-
-        Toolbox.verify_required_params(required_params=required_params_layout, actual_params=passed_required_params, verify_keys=True)
-        Toolbox.verify_required_params(required_params=optional_params_layout, actual_params=passed_optional_params, verify_keys=True)
-
-        if os.system('ping -c 1 {}'.format(passed_required_params['grid_ip'])) != 0:
-            raise ValueError('No response from ip {0}'.format(required_params_layout['grid_ip']))
-
-        ci = {'setup': passed_required_params['setup'],
-              'cleanup': passed_optional_params['cleanup'],
-              'send_to_testrail': passed_optional_params['send_to_testrail'],
-              'fail_on_failed_scenario': passed_optional_params['fail_on_failed_scenario'],
-              'version': passed_optional_params['version'],
-              'scenarios': passed_optional_params['scenarios'],
+        ci = {'setup': all_params['setup'],
+              'cleanup': all_params['cleanup'],
+              'send_to_testrail': all_params['send_to_testrail'],
+              'fail_on_failed_scenario': all_params['fail_on_failed_scenario'],
+              'version': all_params['version'],
+              'scenarios': all_params['scenarios'],
               'local_hypervisor': {'type': SetupJsonGenerator.HYPERV_KVM,
                                    'user': 'root',
                                    'password': 'rooter'},
-              'config_manager': passed_optional_params['config_manager'],
+              'config_manager': all_params['config_manager'],
               'user': {'shell': {'username': 'root',
                                  'password': 'rooter'},
                        'api': {'username': 'admin',
                                'password': 'admin'}},
-              'grid_ip': passed_required_params['grid_ip']}
+              'grid_ip': all_params['grid_ip']}
         self._json_dict['ci'] = ci
 
     def add_hypervisor(self, hypervisor_ip, hypervisor_type=HYPERV_KVM, username='root', password='rooter', virtual_machines=None):
@@ -178,33 +142,37 @@ class SetupJsonGenerator(object):
         """
         if 'ci' not in self._json_dict:
             raise ValueError('CI constants have to be set before adding hypervisors')
-        self._validation_ip(hypervisor_ip)
+        self._validate_ip(hypervisor_ip)
 
         if virtual_machines is None:
             vm_ip = self.config['ci']['grid_ip']
-            suffix = vm_ip.split('.', 1)[-1]
-            virtual_machines = {vm_ip: {'name': 'vm_{0}'.format(suffix), 'role': 'COMPUTE'}}
+            name = 'ubuntu_node_'+str(vm_ip.split('.', 2)[-1]).strip()
+            virtual_machines = {vm_ip: {'name': name, 'role': 'COMPUTE'}}
 
         if not isinstance(virtual_machines, dict):
             raise ValueError('Dict of virtual machines should contain entries like { ip: { `name`: `role`}}')
         for key, value in virtual_machines.iteritems():
-            self._validation_ip(key)
+            self._validate_ip(key)
 
         hypervisor_dict = {'type': hypervisor_type,
                            'user': username,
                            'password': password,
+                           'ip': hypervisor_ip,
                            'vms': virtual_machines}
 
         self._ips.extend(virtual_machines.keys())
-        if 'hypervisors' not in self.config['ci']:
-            self.config['ci']['hypervisors'] = {}
-        self.config['ci']['hypervisors'][hypervisor_ip] = hypervisor_dict
+        if 'hypervisor' not in self.config['ci']:
+            self.config['ci']['hypervisor'] = {}
+        self.config['ci']['hypervisor'] = hypervisor_dict
 
     def remove_hypervisor(self, hypervisor_ip):
-        try:
-            self.config['ci']['hypervisors'].pop(hypervisor_ip)
-        except Exception:
-            pass
+        """
+        remove the hypervisor with the given ip, if present
+        :param hypervisor_ip: ip address of the hypervisor to remove
+        :type hypervisor_ip: str
+        """
+        if self.config['ci']['hypervisor']['ip'] == hypervisor_ip:
+            self.config['ci'].pop('hypervisor')
 
     def add_domain(self, domain):
         """
@@ -215,9 +183,11 @@ class SetupJsonGenerator(object):
         if not isinstance(domain, str):
             raise ValueError('domain is no string')
         self._domains.append(domain)
-        if 'domains' not in self.config.keys():
-            self.config['domains'] = []
-        self.config['domains'].append(domain)
+        if 'setup' not in self.config.keys():
+            self.config['setup'] = {}
+        if 'domains' not in self.config['setup'].keys():
+            self.config['setup']['domains'] = []
+        self.config['setup']['domains'].append(domain)
 
     def remove_domain(self, domain):
         """
@@ -226,8 +196,10 @@ class SetupJsonGenerator(object):
         :type domain: str
         """
         try:
-            self.config['domains'].remove(domain)
-        except Exception:
+            self.config['setup']['domains'].remove(domain)
+            if self.config['setup']['domains'] == []:
+                self.config['setup'].pop('domains')
+        except KeyError:
             pass
 
     def add_storagerouter(self, storagerouter_ip, hostname):
@@ -238,16 +210,18 @@ class SetupJsonGenerator(object):
         :param hostname: hostname of the storagerouter
         :type hostname: str
         """
-        self._validation_ip(storagerouter_ip)
+        self._validate_ip(storagerouter_ip)
         required_params = {'hostname': (str, None, True)}
         Toolbox.verify_required_params(required_params=required_params, actual_params={'hostname': hostname}, verify_keys=True)
-        if 'storagerouters' in self.config.keys():
-            if storagerouter_ip in self.config['storagerouters']:
+        if 'setup' not in self.config.keys():
+            self.config['setup'] = {}
+        if 'storagerouters' in self.config['setup'].keys():
+            if storagerouter_ip in self.config['setup']['storagerouters']:
                 raise ValueError('Storagerouter with given ip {0} already defined.'.format(storagerouter_ip))
         else:
-            if 'storagerouters' not in self.config:
-                self.config['storagerouters'] = {}
-        self.config['storagerouters'][storagerouter_ip] = {'hostname': hostname}
+            if 'storagerouters' not in self.config['setup']:
+                self.config['setup']['storagerouters'] = {}
+        self.config['setup']['storagerouters'][storagerouter_ip] = {'hostname': hostname}
 
     def remove_storagerouter(self, storagerouter_ip):
         """
@@ -256,7 +230,7 @@ class SetupJsonGenerator(object):
         :type storagerouter_ip: str
         """
         try:
-            self.config['storagerouters'].pop(storagerouter_ip)
+            self.config['setup']['storagerouters'].pop(storagerouter_ip)
         except Exception:
             pass
 
@@ -277,9 +251,9 @@ class SetupJsonGenerator(object):
             if role not in DiskPartition.ROLES:
                 raise ValueError('Provided role {0} is not an allowed role for disk {1}.'.format(role, name))
         disk_dict = {name: {'roles': roles}}
-        if 'disks' not in self.config['storagerouters'][storagerouter_ip]:
-            self.config['storagerouters'][storagerouter_ip]['disks'] = {}
-        self.config['storagerouters'][storagerouter_ip]['disks'].update(disk_dict)
+        if 'disks' not in self.config['setup']['storagerouters'][storagerouter_ip]:
+            self.config['setup']['storagerouters'][storagerouter_ip]['disks'] = {}
+        self.config['setup']['storagerouters'][storagerouter_ip]['disks'].update(disk_dict)
 
     def remove_disk_from_sr(self, storagerouter_ip, name):
         """
@@ -290,7 +264,7 @@ class SetupJsonGenerator(object):
         :type name: str
         """
         try:
-            self.config['storagerouters'][storagerouter_ip]['disks'].pop(name)
+            self.config['setup']['storagerouters'][storagerouter_ip]['disks'].pop(name)
         except Exception:
             pass
 
@@ -310,7 +284,7 @@ class SetupJsonGenerator(object):
         if name not in self._domains:
             raise ValueError('Invalid domain passed: {0}'.format(name))
 
-        path = self.config['storagerouters'][storagerouter_ip]
+        path = self.config['setup']['storagerouters'][storagerouter_ip]
         if 'domains' not in path.keys():
             path['domains'] = {}
         path = path['domains']
@@ -328,8 +302,7 @@ class SetupJsonGenerator(object):
         :type name: str
         """
         try:
-            _ = self.config['storagerouters'][storagerouter_ip]['domains']['domain_guids']
-            _.remove(name)
+            self.config['setup']['storagerouters'][storagerouter_ip]['domains']['domain_guids'].remove(name)
         except Exception:
             pass
 
@@ -356,15 +329,15 @@ class SetupJsonGenerator(object):
                                        actual_params={'backend_name': backend_name,
                                                       'domains': domains,
                                                       'scaling': scaling}, verify_keys=True)
-
         be_dict = {'name': backend_name,
                    'domains': {'domain_guids': domains},
                    'scaling': scaling}
-
+        if 'setup' not in self.config.keys():
+            self.config['setup'] = {}
         self._backends.append(be_dict['name'])
-        if 'backends' not in self.config:
-            self.config['backends'] = []
-        self.config['backends'].append(be_dict)
+        if 'backends' not in self.config['setup']:
+            self.config['setup']['backends'] = []
+        self.config['setup']['backends'].append(be_dict)
 
     def remove_backend(self, backend_name):
         """
@@ -372,9 +345,9 @@ class SetupJsonGenerator(object):
         :param backend_name: name of the backend to remove
         :type backend_name: str
         """
-        for backend in self.config['backends']:
+        for index, backend in enumerate(self.config['setup']['backends']):
             if backend['name'] == backend_name:
-                self.config['backends'].pop(self.config['backends'].index(backend))
+                self.config['setup']['backends'].pop(index)
 
     def add_preset_to_backend(self, backend_name, preset_name, policies, compression='snappy', encryption='none', fragment_size=2097152):
         """
@@ -399,11 +372,11 @@ class SetupJsonGenerator(object):
 
         compression_options = ['snappy', 'bz2', 'none']
         if compression not in compression_options:
-            raise ValueError('Invalid compression format specified, please choose from: "{0}"'.format('", "'.join(compression_options)))
+            raise ValueError('Invalid compression format specified, please choose from: "{0}"'.format('', ''.join(compression_options)))
 
         encryption_options = ['aes-cbc-256', 'aes-ctr-256', 'none']
         if encryption not in encryption_options:
-            raise ValueError('Invalid encryption format specified, please choose from: "{0}"'.format('", "'.join(encryption_options)))
+            raise ValueError('Invalid encryption format specified, please choose from: "{0}"'.format('', ''.join(encryption_options)))
 
         if fragment_size is not None and (not isinstance(fragment_size, int) or not 16 <= fragment_size <= 1024 ** 3):
             raise ValueError('Fragment size should be a positive integer smaller than 1 GiB')
@@ -428,11 +401,11 @@ class SetupJsonGenerator(object):
             'fragment_size': fragment_size,
         }
         self._presets.append(preset_dict['name'])
-        for i in range(len(self.config['backends'])):
-            if self.config['backends'][i]['name'] == backend_name:
-                if 'presets' not in self.config['backends'][i]:
-                    self.config['backends'][i]['presets'] = []
-                self.config['backends'][i]['presets'].append(preset_dict)
+        for index, backend in enumerate(self.config['setup']['backends']):
+            if backend['name'] == backend_name:
+                if 'presets' not in backend:
+                    self.config['setup']['backends'][index]['presets'] = []
+                self.config['setup']['backends'][index]['presets'].append(preset_dict)
 
     def remove_preset_from_backend(self, backend_name, preset_name):
         """
@@ -443,13 +416,12 @@ class SetupJsonGenerator(object):
         :type preset_name: str
         """
         try:
-            for i in range(len(self.config['backends'])):
-                if self.config['backends'][i]['name'] == backend_name:
-                    if 'presets' in self.config['backends'][i]:
-                        for j in range(len(self.config['backends'][i]['presets'])):
-                            if self.config['backends'][i]['presets'][j]['name'] == preset_name:
-                                self.config['backends'][i]['presets'].pop(j)
-                        self.config['backends'].remove(i)
+            for index, backend in enumerate(self.config['setup']['backends']):
+                if backend['name'] == backend_name:
+                    if 'presets' in backend:
+                        for jndex, preset in enumerate(self.config['backends'][index]['presets']):
+                            if preset['name'] == preset_name:
+                                self.config['setup']['backends'][index]['presets'].pop(jndex)
         except Exception:
             pass
 
@@ -481,9 +453,9 @@ class SetupJsonGenerator(object):
         Toolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
 
         osd_dict = {}
-        for i in range(len(self.config['backends'])):
-            if self.config['backends'][i]['name'] == backend_name:
-                scaling = self.config['backends'][i]['scaling']
+        for index, backend in enumerate(self.config['setup']['backends']):
+            if backend['name'] == backend_name:
+                scaling = backend['scaling']
                 if scaling == 'LOCAL':
                     if osds_on_disks is None:
                         raise ValueError('Osd dictionary required')
@@ -496,10 +468,10 @@ class SetupJsonGenerator(object):
                     osd_dict = {linked_backend: linked_preset}
 
                 else:
-                    print ValueError('invalid scaling ({0}) passed'.format(scaling))
-            if 'osds' not in self.config['backends'][i]:
-                self.config['backends'][i]['osds'] = {}
-            self.config['backends'][i]['osds'].update(osd_dict)
+                    raise ValueError('invalid scaling ({0}) passed'.format(scaling))
+            if 'osds' not in backend:
+                self.config['setup']['backends'][index]['osds'] = {}
+            self.config['setup']['backends'][index]['osds'].update(osd_dict)
 
     def remove_osd_from_backend(self, osd_identifier, backend_name):
         """
@@ -510,9 +482,9 @@ class SetupJsonGenerator(object):
         :type osd_identifier: str
         """
         try:
-            for i in range(len(self.config['backends'])):
-                if self.config['backends'][i]['name'] == backend_name:
-                    self.config['backends'][i]['osds'].pop(osd_identifier)
+            for index, backend in enumerate(self.config['setup']['backends']):
+                if backend['name'] == backend_name:
+                    self.config['setup']['backends'][index]['osds'].pop(osd_identifier)
         except Exception:
             pass
 
@@ -549,7 +521,7 @@ class SetupJsonGenerator(object):
 
         Toolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
         self._valid_storagerouter(storagerouter_ip=storagerouter_ip)
-        self._validation_ip(ip=storage_ip)
+        self._validate_ip(ip=storage_ip)
         if backend_name not in self._backends:
             raise ValueError('Provided backend {0} not in known backends'.format(backend_name))
         if preset_name not in self._presets:
@@ -559,25 +531,13 @@ class SetupJsonGenerator(object):
                       'storage_ip': storage_ip,
                       'proxies': 1,
                       'fragment_cache': {'strategy': {'cache_on_read': False, 'cache_on_write': False},
-                                         'location': 'disk'
-                                         },
+                                         'location': 'disk'},
                       'block_cache': {'strategy': {'cache_on_read': False, 'cache_on_write': False},
-                                      'location': 'disk'
-                                      },
-                      'storagedriver': {'sco_size': 4,
-                                        'cluster_size': 4,
-                                        'volume_write_buffer': 512,
-                                        'strategy': 'none',
-                                        'global_write_buffer': 20,
-                                        'global_read_buffer': 0,
-                                        'deduplication': 'non_dedupe',
-                                        'dtl_transport': 'tcp',
-                                        'dtl_mode': 'sync'
-                                        }
+                                      'location': 'disk'}
                       }
-        if 'vpools' not in self.config['storagerouters'][storagerouter_ip]:
-            self.config['storagerouters'][storagerouter_ip]['vpools'] = {}
-        self.config['storagerouters'][storagerouter_ip]['vpools'][vpool_name] = vpool_dict
+        if 'vpools' not in self.config['setup']['storagerouters'][storagerouter_ip]:
+            self.config['setup']['storagerouters'][storagerouter_ip]['vpools'] = {}
+        self.config['setup']['storagerouters'][storagerouter_ip]['vpools'][vpool_name] = vpool_dict
 
     def remove_vpool(self, storagerouter_ip, vpool_name):
         """
@@ -588,7 +548,7 @@ class SetupJsonGenerator(object):
         :type vpool_name: str
         """
         try:
-            self.config['storagerouters'][storagerouter_ip]['vpools'].pop(vpool_name)
+            self.config['setup']['storagerouters'][storagerouter_ip]['vpools'].pop(vpool_name)
         except Exception:
             pass
 
@@ -622,7 +582,7 @@ class SetupJsonGenerator(object):
                          'on_write': on_write}
         Toolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
         try:
-            vpool = self.config['storagerouters'][storagerouter_ip]['vpools'][vpool]
+            vpool = self.config['setup']['storagerouters'][storagerouter_ip]['vpools'][vpool]
         except KeyError:
             raise ValueError('Vpool {0} not found'.format(vpool))
         if block_cache is True:
@@ -632,12 +592,66 @@ class SetupJsonGenerator(object):
             vpool['fragment_cache']['strategy']['cache_on_read'] = on_read
             vpool['fragment_cache']['strategy']['cache_on_write'] = on_write
 
+    def update_storagedriver_of_vpool(self, sr_ip, vpool_name, sr_params=None):
+        '''
+        Update all or some data of a storagedriver, assigned to a vpool on a specific storagerouter.
+        :param sr_ip: ip of the storagerouter on which the vpool is located
+        :type sr_ip: str
+        :param vpool_name: name of the vpool of which to update the storagedriver data
+        :type vpool_name: str
+        :param sr_params: parameters to update of the referenced storagedriver
+        :type sr_params: dict
+        '''
+        required_params = {'sco_size': (int, StorageDriverClient.TLOG_MULTIPLIER_MAP.keys()),
+                           'cluster_size': (int, StorageDriverClient.CLUSTER_SIZES),
+                           'volume_write_buffer': (int, {'min': 128, 'max': 10240}, False),
+                           'global_read_buffer': (int, {'min': 128, 'max': 10240}, False),
+                           'strategy': (str, None, False),
+                           'deduplication': (str, None, False),
+                           'dtl_transport': (str, StorageDriverClient.VPOOL_DTL_TRANSPORT_MAP.keys()),
+                           'dtl_mode': (str, StorageDriverClient.VPOOL_DTL_MODE_MAP.keys())}
+
+        default_params = {'sco_size': 4,
+                          'cluster_size': 4,
+                          'volume_write_buffer': 512,
+                          'strategy': 'none',
+                          'global_write_buffer': 128,
+                          'global_read_buffer': 128,
+                          'deduplication': 'non_dedupe',
+                          'dtl_transport': 'tcp',
+                          'dtl_mode': 'sync'}
+
+        if sr_params is None:
+            sr_params = {}
+        default_params.update(sr_params)
+        if not isinstance(default_params, dict):
+            raise ValueError('Parameters should be of type "dict"')
+        Toolbox.verify_required_params(required_params, default_params)
+        if sr_ip not in self.config['setup']['storagerouters'].keys():
+            raise KeyError('Storagerouter with ip is not defined')
+        if vpool_name not in self.config['setup']['storagerouters'][sr_ip]['vpools']:
+            raise KeyError('Vpool with name {0} is not defined on storagerouter with ip {1}'.format(vpool_name, sr_ip))
+        self.config['setup']['storagerouters'][sr_ip]['vpools'][vpool_name]['storagedriver'] = default_params
+
+    def remove_storagedriver_from_vpool(self, sr_ip, vpool_name):
+        '''
+        Remove the storagedriver details on given vpool of given storagerouter.
+        :param sr_ip: ip of the storagerouter on which the vpool is located
+        :type sr_ip: str
+        :param vpool_name: name of the vpool of which to update the storagedriver data
+        :type vpool_name: str
+        '''
+        try:
+            self.config['setup']['storagerouters'][sr_ip]['vpools'][vpool_name].pop('storagedriver')
+        except Exception:
+            pass
+
     def _valid_storagerouter(self, storagerouter_ip):
-        self._validation_ip(storagerouter_ip)
-        if storagerouter_ip not in self.config['storagerouters']:
+        self._validate_ip(storagerouter_ip)
+        if storagerouter_ip not in self.config['setup']['storagerouters']:
             raise ValueError('Storagerouter with ip {0} not found in json'.format(storagerouter_ip))
 
-    def _validation_ip(self, ip):
+    def _validate_ip(self, ip):
         required_params = {'storagerouter_ip': (str, Toolbox.regex_ip, True)}
         try:
             Toolbox.verify_required_params(required_params=required_params, actual_params={'storagerouter_ip': ip}, verify_keys=True)
@@ -671,5 +685,5 @@ class SetupJsonGenerator(object):
                 if 0 in clone.values():
                     raise ValueError('Policy: {0}: {1} cannot be equal to zero'.format(self.get_policy_as_list(), ''.join([i[0] for i in clone.items() if i[1] == 0])))
 
-        for i in policies:
-            _Policy(i).check_policy()
+        for p in policies:
+            _Policy(p).check_policy()

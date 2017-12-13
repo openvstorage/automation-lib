@@ -108,6 +108,7 @@ class VDiskHelper(CIConstants):
                                .format(snapshot_guid, vdisk_name, vpool_name))
 
 
+    @classmethod
     def get_config_params(cls, vdisk_name, vpool_name, timeout=GET_CONFIG_PARAMS_TIMEOUT):
         """
         Fetch the config parameters of a vDisk
@@ -145,6 +146,7 @@ class VDiskHelper(CIConstants):
             return task_result[1]
 
 
+    @classmethod
     def scrub_vdisk(cls, vdisk_guid, timeout=15 * 60, wait=True):
         """
         Scrub a specific vdisk

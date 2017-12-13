@@ -18,21 +18,16 @@ from ovs.dal.lists.disklist import DiskList
 from ovs.dal.lists.diskpartitionlist import DiskPartitionList
 from ..helpers.storagerouter import StoragerouterHelper
 
+
 class DiskHelper(object):
     """
     DiskHelper class
     """
 
-    def __init__(self):
-        from ..helpers.storagerouter import StoragerouterHelper
-
-        pass
-
     @staticmethod
     def get_diskpartitions_by_guid(diskguid):
         """
         Fetch disk partitions by disk guid
-
         :param diskguid: ip address of a storagerouter
         :type diskguid: str
         :return: list of DiskPartition Objects
@@ -45,9 +40,8 @@ class DiskHelper(object):
     def get_roles_from_disks(storagerouter_guid=None):
         """
         Fetch disk roles from all disks with optional storagerouter_ip
-
-        :param storagerouter_ip: ip address of a storage router
-        :type storagerouter_ip: str
+        :param storagerouter_guid: guid of a storage router
+        :type storagerouter_guid: str
         :return: list of lists with roles
         :rtype: list > list
         """
@@ -61,7 +55,6 @@ class DiskHelper(object):
     def get_disk_by_diskname(storagerouter_guid, disk_name):
         """
         Get a disk object by storagerouter guid and disk name
-
         :param storagerouter_guid: guid address of a storage router
         :type storagerouter_guid: str
         :param disk_name: name of a disk (e.g. sda)
@@ -69,7 +62,6 @@ class DiskHelper(object):
         :return: disk object
         :rtype: ovs.dal.hybrids.Disk
         """
-
         storagerouter = StoragerouterHelper.get_storagerouter_by_guid(storagerouter_guid=storagerouter_guid)
         for disk in storagerouter.disks:
             if disk.name == disk_name:
@@ -79,7 +71,6 @@ class DiskHelper(object):
     def get_roles_from_disk(storagerouter_guid, disk_name):
         """
         Get the roles from a certain disk
-
         :param storagerouter_guid: guid address of a storage router
         :type storagerouter_guid: str
         :param disk_name: name of a disk (e.g. sda)
@@ -88,7 +79,6 @@ class DiskHelper(object):
         :rtype: list
         """
         disk = DiskHelper.get_disk_by_diskname(storagerouter_guid, disk_name)
-
         roles_on_disk = []
         if disk:
             for diskpartition in disk.partitions:

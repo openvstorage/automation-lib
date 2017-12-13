@@ -119,3 +119,32 @@ class StoragerouterHelper(CIConstants):
             raise ValueError('No guid or ip passed.')
         task_id = cls.api.post(api='/storagerouters/{0}/rescan_disks/'.format(storagerouter_guid), data=None)
         return cls.api.wait_for_task(task_id=task_id, timeout=timeout)
+
+    @classmethod
+    def get_storagerouters_by_role(cls):
+        """
+        Gets storagerouters based on roles
+        :return:
+        """
+        voldr_str_1 = None  # Will act as volumedriver node
+        voldr_str_2 = None  # Will act as volumedriver node
+        compute_str = None  # Will act as compute node
+        if isinstance(cls.HYPERVISOR_INFO, dict):  # Hypervisor section is filled in -> VM environment
+            nodes_info = {}
+            for hv_ip, hv_info in cls.HYPERVISOR_INFO['vms'].iteritems():
+                nodes_info[hv_ip] = hv_info
+        elif cls.SETUP_CFG['ci'].get('nodes') is not None:  # Physical node section -> Physical environment
+            nodes_info = cls.SETUP_CFG['ci']['nodes']
+        else:
+            raise RuntimeError('Unable to fetch node information. Either hypervisor section or node section is missing!')
+        for node_ip, node_details in nodes_info.iteritems():
+            if node_details['role'] == "VOLDRV":
+                if voldr_str_1 is None:
+                    voldr_str_1 = StoragerouterHelper.get_storagerouter_by_ip(node_ip)
+                elif voldr_str_2 is None:
+                    voldr_str_2 = StoragerouterHelper.get_storagerouter_by_ip(node_ip)
+            elif node_details['role'] == "COMPUTE" and compute_str is None:
+                compute_str = StoragerouterHelper.get_storagerouter_by_ip(node_ip)
+        assert voldr_str_1 is not None and voldr_str_2 is not None and compute_str is not None,\
+            'Could not fetch 2 storagedriver nodes and 1 compute node based on the setup.json config.'
+        return voldr_str_1, voldr_str_2, compute_str

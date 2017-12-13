@@ -14,7 +14,6 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-
 from ovs.dal.hybrids.albabackend import AlbaBackend
 from ovs.dal.lists.albabackendlist import AlbaBackendList
 from ovs.dal.lists.backendlist import BackendList
@@ -163,8 +162,7 @@ class BackendHelper(CIConstants):
             'contents': 'local_stack',
         }
         return cls.api.get(api='/alba/backends/{0}/'.format(BackendHelper.get_alba_backend_guid_by_name(albabackend_name)),
-                       params={'queryparams': options}
-                       )
+                       params={'queryparams': options})
 
     @staticmethod
     def get_alba_backends():

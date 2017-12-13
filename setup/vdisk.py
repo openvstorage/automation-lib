@@ -335,7 +335,7 @@ class VDiskSetup(CIConstants):
 
     @classmethod
     @required_vdisk
-    def set_config_params(vdisk_name, vpool_name, config, timeout=SET_CONFIG_VDISK_TIMEOUT):
+    def set_config_params(cls, vdisk_name, vpool_name, config, timeout=SET_CONFIG_VDISK_TIMEOUT):
         """
         Rollback a vdisk to a certain snapshot
 

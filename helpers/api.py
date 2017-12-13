@@ -72,7 +72,6 @@ class OVSClient(object):
     disable_warnings(InsecureRequestWarning)
     disable_warnings(SNIMissingWarning)
 
-
     def __init__(self, ip, username, password, verify=False, version='*', port=None, raw_response=False):
         """
         Initializes the object with credentials and connection information
@@ -186,7 +185,6 @@ class OVSClient(object):
             else:
                 raise HttpException(status_code, message)
 
-
     def _call(self, api, params, func, **kwargs):
         if not api.endswith('/'):
             api = '{0}/'.format(api)
@@ -266,10 +264,11 @@ class OVSClient(object):
             if timeout is not None and timeout < (time.time() - start):
                 raise TimeOutError('Waiting for task {0} has timed out.'.format(task_id))
             task_metadata = self.get('/tasks/{0}/'.format(task_id))
-            output = 'Task with ID: {0: >40}, current status: {1: >8}, ready: {2: >7}. Result data: {3}'.format(task_metadata['id'],
+            output = 'Task with ID: {0: >40}, current status: {1: >8}, ready: {2: >2}. Result data: {3}'.format(task_metadata['id'],
                                                                                                                  task_metadata['status'],
                                                                                                                  task_metadata['successful'],
                                                                                                                  task_metadata['result'])
+            print output
             OVSClient._logger.debug(output)
             finished = task_metadata['status'] in ('FAILURE', 'SUCCESS')
             if finished is False:
