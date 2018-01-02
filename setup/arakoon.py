@@ -24,7 +24,6 @@ from ..validate.decorators import required_backend, required_arakoon_cluster
 from ..validate.backend import BackendValidation
 
 
-
 class ArakoonSetup(object):
 
     LOGGER = Logger("setup-ci_arakoon_setup")

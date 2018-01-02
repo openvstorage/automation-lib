@@ -24,7 +24,6 @@ from ..helpers.storagerouter import StoragerouterHelper
 from ..setup.roles import RoleSetup
 
 
-
 class RoleRemover(CIConstants):
 
     LOGGER = Logger("remove-ci_role_remover")

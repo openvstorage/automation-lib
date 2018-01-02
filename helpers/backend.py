@@ -162,7 +162,7 @@ class BackendHelper(CIConstants):
             'contents': 'local_stack',
         }
         return cls.api.get(api='/alba/backends/{0}/'.format(BackendHelper.get_alba_backend_guid_by_name(albabackend_name)),
-                       params={'queryparams': options})
+                           params={'queryparams': options})
 
     @staticmethod
     def get_alba_backends():

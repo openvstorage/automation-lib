@@ -18,7 +18,7 @@ from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
 
 
-class FstabHelper():
+class FstabHelper(object):
     """
     Class to help with Fstab manipulations
     Inherits from file class
