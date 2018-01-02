@@ -193,17 +193,17 @@ class OVSClient(object):
         if self._volatile_client is not None:
             self._token = self._volatile_client.get(self._key)
         first_connect = self._token is None
-        headers, url = self._prepare(params=params)
+        headers, _url = self._prepare(params=params)
         try:
-            return self._process(func(url=url.format(api), headers=headers, verify=self._verify, **kwargs))
+            return self._process(func(url=_url.format(api), headers=headers, verify=self._verify, **kwargs))
         except ForbiddenException:
             if self._volatile_client is not None:
                 self._volatile_client.delete(self._key)
             if first_connect is True:  # First connect, so no token was present yet, so no need to try twice without token
                 raise
             self._token = None
-            headers, url = self._prepare(params=params)
-            return self._process(func(url=url.format(api), headers=headers, verify=self._verify, **kwargs))
+            headers, _url = self._prepare(params=params)
+            return self._process(func(url=_url.format(api), headers=headers, verify=self._verify, **kwargs))
         except Exception:
             if self._volatile_client is not None:
                 self._volatile_client.delete(self._key)
@@ -264,7 +264,12 @@ class OVSClient(object):
             if timeout is not None and timeout < (time.time() - start):
                 raise TimeOutError('Waiting for task {0} has timed out.'.format(task_id))
             task_metadata = self.get('/tasks/{0}/'.format(task_id))
-            print task_metadata
+            output = 'Task with ID: {0: >40}, current status: {1: >8}, ready: {2: >2}. Result data: {3}'.format(task_metadata['id'],
+                                                                                                                 task_metadata['status'],
+                                                                                                                 task_metadata['successful'],
+                                                                                                                 task_metadata['result'])
+            print output
+            OVSClient._logger.debug(output)
             finished = task_metadata['status'] in ('FAILURE', 'SUCCESS')
             if finished is False:
                 if task_metadata != previous_metadata:

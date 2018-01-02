@@ -13,15 +13,17 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
+
+from ovs.dal.hybrids.albabackend import AlbaBackend
 from ovs.dal.lists.albabackendlist import AlbaBackendList
 from ovs.dal.lists.backendlist import BackendList
 from ovs.dal.lists.backendtypelist import BackendTypeList
-from ovs.dal.hybrids.albabackend import AlbaBackend
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 from ..helpers.exceptions import PresetNotFoundError, AlbaBackendNotFoundError
 
 
-class BackendHelper(object):
+class BackendHelper(CIConstants):
     """
     BackendHelper class
     """
@@ -127,22 +129,20 @@ class BackendHelper(object):
             BackendHelper.LOGGER.error(error_msg)
             raise NameError(error_msg)
 
-    @staticmethod
-    def get_asd_safety(albabackend_guid, asd_id, api):
+    @classmethod
+    def get_asd_safety(cls, albabackend_guid, asd_id):
         """
         Request the calculation of the disk safety
         :param albabackend_guid: guid of the alba backend
         :type albabackend_guid: str
         :param asd_id: id of the asd
         :type asd_id: str
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :return: asd safety
         :rtype: dict
         """
         params = {'asd_id': asd_id}
-        task_guid = api.get('alba/backends/{0}/calculate_safety'.format(albabackend_guid), params=params)
-        result = api.wait_for_task(task_id=task_guid, timeout=30)
+        task_guid = cls.api.get('alba/backends/{0}/calculate_safety'.format(albabackend_guid), params=params)
+        result = cls.api.wait_for_task(task_id=task_guid, timeout=30)
 
         if result[0] is False:
             errormsg = "Calculate safety for '{0}' failed with '{1}'".format(asd_id, result[1])
@@ -150,22 +150,19 @@ class BackendHelper(object):
             raise RuntimeError(errormsg)
         return result[1]
 
-    @staticmethod
-    def get_backend_local_stack(albabackend_name, api):
+    @classmethod
+    def get_backend_local_stack(cls, albabackend_name):
         """
         Fetches the local stack property of a backend
 
         :param albabackend_name: backend name
         :type albabackend_name: str
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         """
         options = {
             'contents': 'local_stack',
         }
-        return api.get(api='/alba/backends/{0}/'.format(BackendHelper.get_alba_backend_guid_by_name(albabackend_name)),
-                       params={'queryparams': options}
-                       )
+        return cls.api.get(api='/alba/backends/{0}/'.format(BackendHelper.get_alba_backend_guid_by_name(albabackend_name)),
+                           params={'queryparams': options})
 
     @staticmethod
     def get_alba_backends():

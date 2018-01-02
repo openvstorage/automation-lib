@@ -17,11 +17,12 @@ import time
 from ovs.extensions.generic.logger import Logger
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
+from ..helpers.ci_constants import CIConstants
 from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_preset, \
     check_linked_backend, filter_osds
 
 
-class BackendSetup(object):
+class BackendSetup(CIConstants):
 
     LOGGER = Logger("setup-ci_backend_setup")
     LOCAL_STACK_SYNC = 30
@@ -32,16 +33,15 @@ class BackendSetup(object):
     CLAIM_ASD_TIMEOUT = 60
     LINK_BACKEND_TIMEOUT = 60
     MAX_BACKEND_TRIES = 20
-
     MAX_CLAIM_RETRIES = 5
 
     def __init__(self):
         pass
 
-    @staticmethod
+    @classmethod
     @check_backend
     @required_roles(['DB'])
-    def add_backend(backend_name, api, scaling='LOCAL', timeout=BACKEND_TIMEOUT, max_tries=MAX_BACKEND_TRIES):
+    def add_backend(cls, backend_name, scaling='LOCAL', timeout=BACKEND_TIMEOUT, max_tries=MAX_BACKEND_TRIES):
         """
         Add a new backend
         :param backend_name: Name of the Backend to add
@@ -50,8 +50,6 @@ class BackendSetup(object):
         :type scaling: str
         :return: backend_name
         :rtype: str
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param timeout: timeout between tries
         :type timeout: int
         :param max_tries: amount of max. tries to check if a backend has been successfully created
@@ -60,7 +58,7 @@ class BackendSetup(object):
         :rtype: bool
         """
         # ADD_BACKEND
-        backend = api.post(
+        backend = cls.api.post(
             api='backends',
             data={
                 'name': backend_name,
@@ -70,7 +68,7 @@ class BackendSetup(object):
         )
 
         # ADD_ALBABACKEND
-        api.post(api='alba/backends', data={'backend_guid': backend['guid'], 'scaling': scaling})
+        cls.api.post(api='alba/backends', data={'backend_guid': backend['guid'], 'scaling': scaling})
 
         # CHECK_STATUS until done
         backend_running_status = "RUNNING"
@@ -96,10 +94,10 @@ class BackendSetup(object):
                                   .format(backend_name, scaling, BackendHelper.get_backend_status_by_name(backend_name)))
         return False
 
-    @staticmethod
+    @classmethod
     @check_preset
     @required_backend
-    def add_preset(albabackend_name, preset_details, api, timeout=ADD_PRESET_TIMEOUT):
+    def add_preset(cls, albabackend_name, preset_details, timeout=ADD_PRESET_TIMEOUT):
         """
         Add a new preset
         :param albabackend_name: albabackend name (e.g. 'mybackend')
@@ -117,8 +115,6 @@ class BackendSetup(object):
             "fragment_size": 2097152
         }
         :type preset_details: dict
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param timeout: amount of max time that preset may take to be added
         :type timeout: int
         :return: success or not
@@ -132,12 +128,12 @@ class BackendSetup(object):
                   'fragment_size': preset_details['fragment_size']}
 
         # ADD_PRESET
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/alba/backends/{0}/add_preset'.format(BackendHelper.get_alba_backend_guid_by_name(albabackend_name)),
             data=preset
         )
 
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Preset `{0}` has failed to create on backend `{1}`".format(preset_details['name'], albabackend_name)
@@ -147,10 +143,10 @@ class BackendSetup(object):
             BackendSetup.LOGGER.info("Creation of preset `{0}` should have succeeded on backend `{1}`".format(preset_details['name'], albabackend_name))
             return True
 
-    @staticmethod
+    @classmethod
     @required_preset
     @required_backend
-    def update_preset(albabackend_name, preset_name, policies, api, timeout=UPDATE_PRESET_TIMEOUT):
+    def update_preset(cls, albabackend_name, preset_name, policies, timeout=UPDATE_PRESET_TIMEOUT):
         """
         Update a existing preset
         :param albabackend_name: albabackend name
@@ -159,20 +155,18 @@ class BackendSetup(object):
         :type preset_name: str
         :param policies: policies to be updated (e.g. [[1,1,2,2], [1,1,1,2]])
         :type policies: list > list
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param timeout: amount of max time that preset may take to be added
         :type timeout: int
         :return: success or not
         :rtype: bool
         """
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/alba/backends/{0}/update_preset'
                 .format(BackendHelper.get_alba_backend_guid_by_name(albabackend_name)),
             data={"name": preset_name, "policies": policies}
         )
 
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Preset `{0}` has failed to update with policies `{1}` on backend `{2}`"\
@@ -184,30 +178,28 @@ class BackendSetup(object):
                                      .format(preset_name, albabackend_name))
             return True
 
-    @staticmethod
+    @classmethod
     @required_backend
     @filter_osds
-    def add_asds(target, disks, albabackend_name, api, claim_retries=MAX_CLAIM_RETRIES):
+    def add_asds(cls, target, disks, albabackend_name, claim_retries=MAX_CLAIM_RETRIES):
         """
         Initialize and claim a new asds on given disks
         :param target: target to add asds too
         :type target: str
         :param disks: dict with diskname as key and amount of osds as value
         :type disks: dict
-        :param claim_retries: Maximum amount of claim retries
-        :type claim_retries: int
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param albabackend_name: Name of the AlbaBackend to configure
         :type albabackend_name: str
+        :param claim_retries: Maximum amount of claim retries
+        :type claim_retries: int
         :return: preset_name
         :rtype: str
         """
-        BackendSetup._discover_and_register_nodes(api)  # Make sure all backends are registered
-        node_mapping = AlbaNodeHelper._map_alba_nodes(api)  # target is a node
+        BackendSetup._discover_and_register_nodes()  # Make sure all backends are registered
+        node_mapping = AlbaNodeHelper._map_alba_nodes()  # target is a node
         alba_backend_guid = BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
 
-        backend_info = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=api)
+        backend_info = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name)
         local_stack = backend_info['local_stack']
         node_slot_information = {}
         for disk, amount_of_osds in disks.iteritems():
@@ -224,10 +216,11 @@ class BackendSetup(object):
                                              'slot_id': slot_id,
                                              'osd_type': 'ASD',
                                              'alba_backend_guid': alba_backend_guid})
+
                     node_slot_information[alba_node_guid] = slot_information
         for alba_node_guid, slot_information in node_slot_information.iteritems():
             BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(slot_information, alba_node_guid))
-            BackendSetup._fill_slots(alba_node_guid=alba_node_guid, slot_information=slot_information, api=api)
+            BackendSetup._fill_slots(alba_node_guid=alba_node_guid, slot_information=slot_information)
 
         # Local stack should sync with the new disks
         BackendSetup.LOGGER.info('Sleeping for {0} seconds to let local stack sync.'.format(BackendSetup.LOCAL_STACK_SYNC))
@@ -266,14 +259,12 @@ class BackendSetup(object):
                     node_osds_to_claim[alba_node_guid] = osds_to_claim
         for alba_node_guid, osds_to_claim in node_osds_to_claim.iteritems():
             BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(osds_to_claim, alba_node_guid))
-            BackendSetup._claim_osds(alba_backend_name=albabackend_name, alba_node_guid=alba_node_guid, osds=osds_to_claim, api=api)
+            BackendSetup._claim_osds(alba_backend_name=albabackend_name, alba_node_guid=alba_node_guid, osds=osds_to_claim)
 
-    @staticmethod
-    def _discover_and_register_nodes(api):
+    @classmethod
+    def _discover_and_register_nodes(cls):
         """
         Will discover and register potential nodes to the DAL/Alba
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         """
 
         options = {
@@ -281,61 +272,54 @@ class BackendSetup(object):
             'contents': 'node_id,_relations',
             'discover': True
         }
-        response = api.get(
+        response = cls.api.get(
             api='alba/nodes',
             params=options
         )
         for node in response['data']:
-            api.post(
+            cls.api.post(
                 api='alba/nodes',
                 data={'node_id': {'node_id': node['node_id']}}
             )
 
-    @staticmethod
-    def _map_alba_nodes(api):
+    @classmethod
+    def _map_alba_nodes(cls):
         """
         Will map the alba_node_id with its guid counterpart and return the map dict
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         """
         mapping = {}
 
         options = {
             'contents': 'node_id,_relations',
         }
-        response = api.get(
+        response = cls.api.get(
             api='alba/nodes',
             params=options
         )
         for node in response['data']:
-            print node
             mapping[node['node_id']] = node['guid']
 
         return mapping
 
-    @staticmethod
-    def get_backend_local_stack(alba_backend_name, api):
+    @classmethod
+    def get_backend_local_stack(cls, alba_backend_name):
         """
         Fetches the local stack property of a backend
         :param alba_backend_name: backend name
         :type alba_backend_name: str
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         """
         options = {
             'contents': 'local_stack',
         }
-        return api.get(api='/alba/backends/{0}/'.format(BackendHelper.get_alba_backend_guid_by_name(alba_backend_name)),
+        return cls.api.get(api='/alba/backends/{0}/'.format(BackendHelper.get_alba_backend_guid_by_name(alba_backend_name)),
                        params={'queryparams': options}
                        )
 
-    @staticmethod
-    def _fill_slots(alba_node_guid, api, slot_information, timeout=INITIALIZE_DISK_TIMEOUT):
+    @classmethod
+    def _fill_slots(cls, alba_node_guid, slot_information, timeout=INITIALIZE_DISK_TIMEOUT):
         """
         Initializes a disk to create osds
         :param alba_node_guid:
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param timeout: timeout counter in seconds
         :param slot_information: list of slots to fill
         :type slot_information: list
@@ -343,12 +327,11 @@ class BackendSetup(object):
         :return:
         """
         data = {'slot_information': slot_information}
-
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/alba/nodes/{0}/fill_slots/'.format(alba_node_guid),
             data=data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
         if not task_result[0]:
             error_msg = "Initialize disk `{0}` for alba node `{1}` has failed".format(data, alba_node_guid)
             BackendSetup.LOGGER.error(error_msg)
@@ -357,8 +340,8 @@ class BackendSetup(object):
             BackendSetup.LOGGER.info("Successfully initialized '{0}'".format(data))
             return task_result[0]
 
-    @staticmethod
-    def _claim_osds(alba_backend_name, alba_node_guid, osds, api, timeout=CLAIM_ASD_TIMEOUT):
+    @classmethod
+    def _claim_osds(cls, alba_backend_name, alba_node_guid, osds, timeout=CLAIM_ASD_TIMEOUT):
         """
         Claims a asd
         :param alba_backend_name: backend name
@@ -367,19 +350,17 @@ class BackendSetup(object):
         :type alba_node_guid: str
         :param osds: list of osds to claim
         :type osds: list
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param timeout: timeout counter in seconds
         :type timeout: int
         :return:
         """
         data = {'alba_node_guid': alba_node_guid,
                 'osds': osds}
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/alba/backends/{0}/add_osds/'.format(BackendHelper.get_alba_backend_guid_by_name(alba_backend_name)),
             data=data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Claim ASD `{0}` for alba backend `{1}` has failed with error '{2}'".format(osds, alba_backend_name, task_result[1])
@@ -389,11 +370,11 @@ class BackendSetup(object):
             BackendSetup.LOGGER.info("Succesfully claimed '{0}'".format(osds))
             return task_result[0]
 
-    @staticmethod
+    @classmethod
     @required_preset
     @required_backend
     @check_linked_backend
-    def link_backend(albabackend_name, globalbackend_name, preset_name, api, timeout=LINK_BACKEND_TIMEOUT):
+    def link_backend(cls, albabackend_name, globalbackend_name, preset_name, timeout=LINK_BACKEND_TIMEOUT):
         """
         Link a LOCAL backend to a GLOBAL backend
 
@@ -403,12 +384,11 @@ class BackendSetup(object):
         :type globalbackend_name: str
         :param preset_name: name of the preset available in the LOCAL alba backend
         :type preset_name: str
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param timeout: timeout counter in seconds
         :type timeout: int
         :return:
         """
+
         local_albabackend = BackendHelper.get_albabackend_by_name(albabackend_name)
 
         data = {
@@ -427,14 +407,13 @@ class BackendSetup(object):
               }
            }
         }
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/alba/backends/{0}/link_alba_backends'
                 .format(BackendHelper.get_alba_backend_guid_by_name(globalbackend_name)),
             data=data
         )
 
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
-
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
         if not task_result[0]:
             error_msg = "Linking backend `{0}` to global backend `{1}` has failed with error '{2}'".format(
                 albabackend_name, globalbackend_name, task_result[1])

@@ -13,12 +13,14 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
+
 from ovs.dal.hybrids.albanode import AlbaNode
 from ovs.dal.lists.albanodelist import AlbaNodeList
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 
 
-class AlbaNodeHelper(object):
+class AlbaNodeHelper(CIConstants):
     """
     Alba node helper class
     """
@@ -26,19 +28,17 @@ class AlbaNodeHelper(object):
     LOGGER = Logger('helpers-ci_albanode')
     IGNORE_KEYS = ('_error', '_duration', '_version', '_success')
 
-    @staticmethod
-    def _map_alba_nodes(api):
+    @classmethod
+    def _map_alba_nodes(cls):
         """
         Will map the alba_node_id with its guid counterpart and return the map dict
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         """
-        mapping = {}
 
+        mapping = {}
         options = {
             'contents': 'node_id,_relations',
         }
-        response = api.get(
+        response = cls.api.get(
             api='alba/nodes',
             params=options
         )
