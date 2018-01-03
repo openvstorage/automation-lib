@@ -30,7 +30,7 @@ class DomainSetup(CIConstants):
         pass
 
     @classmethod
-    def add_domain(cls, domain_name):
+    def add_domain(cls, domain_name, *args, **kwargs):
         """
         Add a new (recovery) domain to the cluster
 
@@ -57,7 +57,7 @@ class DomainSetup(CIConstants):
             return
 
     @classmethod
-    def link_domains_to_storagerouter(cls, domain_details, storagerouter_ip):
+    def link_domains_to_storagerouter(cls, domain_details, storagerouter_ip, *args, **kwargs):
         """
         Link a existing domain(s) and/or recovery (domains) to a storagerouter
         :param domain_details: domain details of a storagerouter
@@ -100,7 +100,7 @@ class DomainSetup(CIConstants):
 
     @classmethod
     @required_backend
-    def link_domains_to_backend(cls, domain_details, albabackend_name):
+    def link_domains_to_backend(cls, domain_details, albabackend_name, *args, **kwargs):
         """
         Link a existing domain(s) and/or recovery (domains) to a storagerouter
 

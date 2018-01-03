@@ -26,7 +26,7 @@ class VPoolRemover(CIConstants):
     REMOVE_VPOOL_TIMEOUT = 500
 
     @classmethod
-    def remove_vpool(cls, vpool_name, storagerouter_ip, timeout=REMOVE_VPOOL_TIMEOUT):
+    def remove_vpool(cls, vpool_name, storagerouter_ip, timeout=REMOVE_VPOOL_TIMEOUT, *args, **kwargs):
         """
         Removes a existing vpool from a storagerouter
         :param vpool_name: the name of a existing vpool

@@ -86,7 +86,7 @@ class RoleSetup(CIConstants):
 
     @classmethod
     def configure_disk(cls, storagerouter_guid, disk_guid, offset, size, roles, partition_guid=None,
-                       timeout=CONFIGURE_DISK_TIMEOUT):
+                       timeout=CONFIGURE_DISK_TIMEOUT, *args, **kwargs):
         """
         Partition a disk and add roles to it
 

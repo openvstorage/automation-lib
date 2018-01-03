@@ -41,7 +41,7 @@ class BackendSetup(CIConstants):
     @classmethod
     @check_backend
     @required_roles(['DB'])
-    def add_backend(cls, backend_name, scaling='LOCAL', timeout=BACKEND_TIMEOUT, max_tries=MAX_BACKEND_TRIES):
+    def add_backend(cls, backend_name, scaling='LOCAL', timeout=BACKEND_TIMEOUT, max_tries=MAX_BACKEND_TRIES, *args, **kwargs):
         """
         Add a new backend
         :param backend_name: Name of the Backend to add
@@ -97,7 +97,7 @@ class BackendSetup(CIConstants):
     @classmethod
     @check_preset
     @required_backend
-    def add_preset(cls, albabackend_name, preset_details, timeout=ADD_PRESET_TIMEOUT):
+    def add_preset(cls, albabackend_name, preset_details, timeout=ADD_PRESET_TIMEOUT, *args, **kwargs):
         """
         Add a new preset
         :param albabackend_name: albabackend name (e.g. 'mybackend')
@@ -146,7 +146,7 @@ class BackendSetup(CIConstants):
     @classmethod
     @required_preset
     @required_backend
-    def update_preset(cls, albabackend_name, preset_name, policies, timeout=UPDATE_PRESET_TIMEOUT):
+    def update_preset(cls, albabackend_name, preset_name, policies, timeout=UPDATE_PRESET_TIMEOUT, *args, **kwargs):
         """
         Update a existing preset
         :param albabackend_name: albabackend name
@@ -181,7 +181,7 @@ class BackendSetup(CIConstants):
     @classmethod
     @required_backend
     @filter_osds
-    def add_asds(cls, target, disks, albabackend_name, claim_retries=MAX_CLAIM_RETRIES):
+    def add_asds(cls, target, disks, albabackend_name, claim_retries=MAX_CLAIM_RETRIES, *args, **kwargs):
         """
         Initialize and claim a new asds on given disks
         :param target: target to add asds too
@@ -262,7 +262,7 @@ class BackendSetup(CIConstants):
             BackendSetup._claim_osds(alba_backend_name=albabackend_name, alba_node_guid=alba_node_guid, osds=osds_to_claim)
 
     @classmethod
-    def _discover_and_register_nodes(cls):
+    def _discover_and_register_nodes(cls, *args, **kwargs):
         """
         Will discover and register potential nodes to the DAL/Alba
         """
@@ -283,7 +283,7 @@ class BackendSetup(CIConstants):
             )
 
     @classmethod
-    def _map_alba_nodes(cls):
+    def _map_alba_nodes(cls, *args, **kwargs):
         """
         Will map the alba_node_id with its guid counterpart and return the map dict
         """
@@ -302,7 +302,7 @@ class BackendSetup(CIConstants):
         return mapping
 
     @classmethod
-    def get_backend_local_stack(cls, alba_backend_name):
+    def get_backend_local_stack(cls, alba_backend_name, *args, **kwargs):
         """
         Fetches the local stack property of a backend
         :param alba_backend_name: backend name
@@ -316,7 +316,7 @@ class BackendSetup(CIConstants):
                        )
 
     @classmethod
-    def _fill_slots(cls, alba_node_guid, slot_information, timeout=INITIALIZE_DISK_TIMEOUT):
+    def _fill_slots(cls, alba_node_guid, slot_information, timeout=INITIALIZE_DISK_TIMEOUT, *args, **kwargs):
         """
         Initializes a disk to create osds
         :param alba_node_guid:
@@ -341,7 +341,7 @@ class BackendSetup(CIConstants):
             return task_result[0]
 
     @classmethod
-    def _claim_osds(cls, alba_backend_name, alba_node_guid, osds, timeout=CLAIM_ASD_TIMEOUT):
+    def _claim_osds(cls, alba_backend_name, alba_node_guid, osds, timeout=CLAIM_ASD_TIMEOUT, *args, **kwargs):
         """
         Claims a asd
         :param alba_backend_name: backend name
@@ -374,7 +374,7 @@ class BackendSetup(CIConstants):
     @required_preset
     @required_backend
     @check_linked_backend
-    def link_backend(cls, albabackend_name, globalbackend_name, preset_name, timeout=LINK_BACKEND_TIMEOUT):
+    def link_backend(cls, albabackend_name, globalbackend_name, preset_name, timeout=LINK_BACKEND_TIMEOUT, *args, **kwargs):
         """
         Link a LOCAL backend to a GLOBAL backend
 

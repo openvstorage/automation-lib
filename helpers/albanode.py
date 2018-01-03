@@ -29,7 +29,7 @@ class AlbaNodeHelper(CIConstants):
     IGNORE_KEYS = ('_error', '_duration', '_version', '_success')
 
     @classmethod
-    def _map_alba_nodes(cls):
+    def _map_alba_nodes(cls, *args, **kwargs):
         """
         Will map the alba_node_id with its guid counterpart and return the map dict
         """

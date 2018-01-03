@@ -66,7 +66,7 @@ class RoleRemover(CIConstants):
             raise RuntimeError('Could not remove filesystem of {0}'.format(alias_part_label))
 
     @classmethod
-    def remove_role(cls, storagerouter_ip, diskname):
+    def remove_role(cls, storagerouter_ip, diskname, *args, **kwargs):
         allowed_roles = ['WRITE', 'DTL', 'SCRUB', 'DB']
         cls.LOGGER.info("Starting removal of disk roles.")
         # Fetch information
