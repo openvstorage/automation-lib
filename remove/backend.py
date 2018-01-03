@@ -37,7 +37,7 @@ class BackendRemover(CIConstants):
         pass
 
     @classmethod
-    def remove_asds(cls, albabackend_name, target, disks):
+    def remove_asds(cls, albabackend_name, target, disks, *args, **kwargs):
         """
         Remove all asds from a backend
 
@@ -83,7 +83,7 @@ class BackendRemover(CIConstants):
                     BackendRemover._remove_disk(alba_node_guid=alba_node_guid, diskname=disk_path)
 
     @classmethod
-    def _remove_asd(cls, alba_node_guid, asd_id, asd_safety, timeout=REMOVE_ASD_TIMEOUT):
+    def _remove_asd(cls, alba_node_guid, asd_id, asd_safety, timeout=REMOVE_ASD_TIMEOUT, *args, **kwargs):
         """
         Remove a asd from a backend
 
@@ -114,7 +114,7 @@ class BackendRemover(CIConstants):
         return result[0]
 
     @classmethod
-    def _remove_disk(cls, alba_node_guid, diskname, timeout=REMOVE_DISK_TIMEOUT):
+    def _remove_disk(cls, alba_node_guid, diskname, timeout=REMOVE_DISK_TIMEOUT, *args, **kwargs):
         """
         Removes a an initiliazed disk from the model
 
@@ -142,7 +142,7 @@ class BackendRemover(CIConstants):
 
     @classmethod
     @required_backend
-    def remove_backend(cls, albabackend_name, timeout=REMOVE_BACKEND_TIMEOUT):
+    def remove_backend(cls, albabackend_name, timeout=REMOVE_BACKEND_TIMEOUT, *args, **kwargs):
         """
         Removes a alba backend from the ovs cluster
 
@@ -167,7 +167,7 @@ class BackendRemover(CIConstants):
     @classmethod
     @required_preset
     @required_backend
-    def remove_preset(cls, preset_name, albabackend_name, timeout=REMOVE_PRESET_TIMEOUT):
+    def remove_preset(cls, preset_name, albabackend_name, timeout=REMOVE_PRESET_TIMEOUT, *args, **kwargs):
         """
         Removes a alba backend from the ovs cluster
 
@@ -196,151 +196,7 @@ class BackendRemover(CIConstants):
 
     @classmethod
     #@required_backend
-    def unlink_backend(cls, globalbackend_name, albabackend_name, timeout=UNLINK_BACKEND_TIMEOUT):
-        """
-        Link a LOCAL backend to a GLOBAL backend
-
-        :param globalbackend_name: name of a GLOBAL alba backend
-        :type globalbackend_name: str
-        :param albabackend_name: name of a backend to unlink
-        :type albabackend_name: str
-        :param timeout: timeout counter in seconds
-        :type timeout: int
-        :return:
-        """
-        data = {
-            "linked_guid": BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
-        }
-
-        task_guid = cls.api.post(
-            api='/alba/backends/{0}/unlink_alba_backends'
-                .format(BackendHelper.get_alba_backend_guid_by_name(globalbackend_name)),
-            data=data
-        )
-
-        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
-        if not task_result[0]:
-            error_msg = "Unlinking backend `{0}` from global backend `{1}` has failed with error '{2}'".format(
-                albabackend_name, globalbackend_name, task_result[1])
-            BackendRemover.LOGGER.error(error_msg)
-            raise RuntimeError(error_msg)
-        else:
-            BackendRemover.LOGGER.info("Unlinking backend `{0}` from global backend `{1}` should have succeeded"
-                                     .format(albabackend_name, globalbackend_name))
-            return task_result[0]
-
-
-    @classmethod
-    #@required_backend
-    def unlink_backend(cls, globalbackend_name, albabackend_name, timeout=UNLINK_BACKEND_TIMEOUT):
-        """
-        Link a LOCAL backend to a GLOBAL backend
-
-        :param globalbackend_name: name of a GLOBAL alba backend
-        :type globalbackend_name: str
-        :param albabackend_name: name of a backend to unlink
-        :type albabackend_name: str
-        :param timeout: timeout counter in seconds
-        :type timeout: int
-        :return:
-        """
-        data = {
-            "linked_guid": BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
-        }
-
-        task_guid = cls.api.post(
-            api='/alba/backends/{0}/unlink_alba_backends'
-                .format(BackendHelper.get_alba_backend_guid_by_name(globalbackend_name)),
-            data=data
-        )
-
-        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
-        if not task_result[0]:
-            error_msg = "Unlinking backend `{0}` from global backend `{1}` has failed with error '{2}'".format(
-                albabackend_name, globalbackend_name, task_result[1])
-            BackendRemover.LOGGER.error(error_msg)
-            raise RuntimeError(error_msg)
-        else:
-            BackendRemover.LOGGER.info("Unlinking backend `{0}` from global backend `{1}` should have succeeded"
-                                     .format(albabackend_name, globalbackend_name))
-            return task_result[0]
-
-
-    @classmethod
-    #@required_backend
-    def unlink_backend(cls, globalbackend_name, albabackend_name, timeout=UNLINK_BACKEND_TIMEOUT):
-        """
-        Link a LOCAL backend to a GLOBAL backend
-
-        :param globalbackend_name: name of a GLOBAL alba backend
-        :type globalbackend_name: str
-        :param albabackend_name: name of a backend to unlink
-        :type albabackend_name: str
-        :param timeout: timeout counter in seconds
-        :type timeout: int
-        :return:
-        """
-        data = {
-            "linked_guid": BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
-        }
-
-        task_guid = cls.api.post(
-            api='/alba/backends/{0}/unlink_alba_backends'
-                .format(BackendHelper.get_alba_backend_guid_by_name(globalbackend_name)),
-            data=data
-        )
-
-        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
-        if not task_result[0]:
-            error_msg = "Unlinking backend `{0}` from global backend `{1}` has failed with error '{2}'".format(
-                albabackend_name, globalbackend_name, task_result[1])
-            BackendRemover.LOGGER.error(error_msg)
-            raise RuntimeError(error_msg)
-        else:
-            BackendRemover.LOGGER.info("Unlinking backend `{0}` from global backend `{1}` should have succeeded"
-                                     .format(albabackend_name, globalbackend_name))
-            return task_result[0]
-
-
-    @classmethod
-    #@required_backend
-    def unlink_backend(cls, globalbackend_name, albabackend_name, timeout=UNLINK_BACKEND_TIMEOUT):
-        """
-        Link a LOCAL backend to a GLOBAL backend
-
-        :param globalbackend_name: name of a GLOBAL alba backend
-        :type globalbackend_name: str
-        :param albabackend_name: name of a backend to unlink
-        :type albabackend_name: str
-        :param timeout: timeout counter in seconds
-        :type timeout: int
-        :return:
-        """
-        data = {
-            "linked_guid": BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
-        }
-
-        task_guid = cls.api.post(
-            api='/alba/backends/{0}/unlink_alba_backends'
-                .format(BackendHelper.get_alba_backend_guid_by_name(globalbackend_name)),
-            data=data
-        )
-
-        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
-        if not task_result[0]:
-            error_msg = "Unlinking backend `{0}` from global backend `{1}` has failed with error '{2}'".format(
-                albabackend_name, globalbackend_name, task_result[1])
-            BackendRemover.LOGGER.error(error_msg)
-            raise RuntimeError(error_msg)
-        else:
-            BackendRemover.LOGGER.info("Unlinking backend `{0}` from global backend `{1}` should have succeeded"
-                                     .format(albabackend_name, globalbackend_name))
-            return task_result[0]
-
-
-    @classmethod
-    #@required_backend
-    def unlink_backend(cls, globalbackend_name, albabackend_name, timeout=UNLINK_BACKEND_TIMEOUT):
+    def unlink_backend(cls, globalbackend_name, albabackend_name, timeout=UNLINK_BACKEND_TIMEOUT, *args, **kwargs):
         """
         Link a LOCAL backend to a GLOBAL backend
 

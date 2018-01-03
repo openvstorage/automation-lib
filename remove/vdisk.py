@@ -31,7 +31,7 @@ class VDiskRemover(CIConstants):
         pass
 
     @classmethod
-    def remove_vdisks_with_structure(cls, vdisks, timeout=REMOVE_VDISK_TIMEOUT):
+    def remove_vdisks_with_structure(cls, vdisks, timeout=REMOVE_VDISK_TIMEOUT, *args, **kwargs):
         """
         Remove many vdisks at once. Will keep the parent structure in mind
         :param vdisks: list of vdisks
@@ -50,7 +50,7 @@ class VDiskRemover(CIConstants):
             removed_guids.append(vdisk.guid)
 
     @classmethod
-    def remove_snapshot(cls, snapshot_guid, vdisk_name, vpool_name, timeout=REMOVE_SNAPSHOT_TIMEOUT):
+    def remove_snapshot(cls, snapshot_guid, vdisk_name, vpool_name, timeout=REMOVE_SNAPSHOT_TIMEOUT, *args, **kwargs):
         """
         Remove a existing snapshot from a existing vdisk
         :param vdisk_name: location of a vdisk on a vpool
@@ -84,7 +84,7 @@ class VDiskRemover(CIConstants):
             return True
 
     @classmethod
-    def remove_vdisk(cls, vdisk_guid, timeout=REMOVE_VDISK_TIMEOUT):
+    def remove_vdisk(cls, vdisk_guid, timeout=REMOVE_VDISK_TIMEOUT, *args, **kwargs):
         """
         Remove a vdisk from a vPool
         :param vdisk_guid: guid of a existing vdisk
@@ -105,7 +105,7 @@ class VDiskRemover(CIConstants):
             return True
 
     @classmethod
-    def remove_vdisk_by_name(cls, vdisk_name, vpool_name, timeout=REMOVE_VDISK_TIMEOUT):
+    def remove_vdisk_by_name(cls, vdisk_name, vpool_name, timeout=REMOVE_VDISK_TIMEOUT, *args, **kwargs):
         """
         Remove a vdisk from a vPool
         :param vdisk_name: name of a existing vdisk (e.g. test.raw)
@@ -120,7 +120,7 @@ class VDiskRemover(CIConstants):
 
     @classmethod
     @required_vtemplate
-    def remove_vtemplate_by_name(cls, vdisk_name, vpool_name, timeout=REMOVE_VTEMPLATE_TIMEOUT):
+    def remove_vtemplate_by_name(cls, vdisk_name, vpool_name, timeout=REMOVE_VTEMPLATE_TIMEOUT, *args, **kwargs):
         """
         Remove a vTemplate from a cluster
         :param vdisk_name: name of a existing vdisk (e.g. test.raw)

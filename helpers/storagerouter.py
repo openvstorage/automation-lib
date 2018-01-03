@@ -99,7 +99,7 @@ class StoragerouterHelper(CIConstants):
         return StorageRouterList.get_storagerouters()
 
     @classmethod
-    def sync_disk_with_reality(cls, guid=None, ip=None, timeout=None):
+    def sync_disk_with_reality(cls, guid=None, ip=None, timeout=None, *args, **kwargs):
         """
         :param guid: guid of the storagerouter
         :type guid: str

@@ -37,7 +37,7 @@ class VDiskSetup(CIConstants):
 
     @classmethod
     def create_snapshot(cls, snapshot_name, vdisk_name, vpool_name, consistent=True, sticky=True,
-                        timeout=CREATE_SNAPSHOT_TIMEOUT):
+                        timeout=CREATE_SNAPSHOT_TIMEOUT, *args, **kwargs):
         """
         Create a new snapshot for a vdisk
 
@@ -82,7 +82,7 @@ class VDiskSetup(CIConstants):
             return task_result[1]
 
     @classmethod
-    def create_vdisk(cls, vdisk_name, vpool_name, size, storagerouter_ip, timeout=CREATE_VDISK_TIMEOUT):
+    def create_vdisk(cls, vdisk_name, vpool_name, size, storagerouter_ip, timeout=CREATE_VDISK_TIMEOUT, *args, **kwargs):
         """
         Create a new vDisk on a certain vPool/storagerouter
         :param vdisk_name: location of a vdisk on a vpool (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
@@ -132,7 +132,7 @@ class VDiskSetup(CIConstants):
 
     @classmethod
     @required_vdisk
-    def move_vdisk(cls, vdisk_guid, target_storagerouter_guid, timeout=60):
+    def move_vdisk(cls, vdisk_guid, target_storagerouter_guid, timeout=60, *args, **kwargs):
         """
         Moves a vdisk
         :param vdisk_guid: guid of the vdisk
@@ -162,7 +162,7 @@ class VDiskSetup(CIConstants):
     @required_vdisk
     @required_snapshot
     def create_clone(cls, vdisk_name, vpool_name, new_vdisk_name, storagerouter_ip, snapshot_id=None,
-                     timeout=CREATE_CLONE_TIMEOUT):
+                     timeout=CREATE_CLONE_TIMEOUT, *args, **kwargs):
         """
         Create a new vDisk on a certain vPool/storagerouter
         :param vdisk_name: location of a vdisk on a vpool (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
@@ -224,7 +224,7 @@ class VDiskSetup(CIConstants):
 
     @classmethod
     @required_vdisk
-    def set_vdisk_as_template(cls, vdisk_name, vpool_name, timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT):
+    def set_vdisk_as_template(cls, vdisk_name, vpool_name, timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT, *args, **kwargs):
         """
         Create a new vDisk on a certain vPool/storagerouter
         Set a existing vDisk as vTemplate
@@ -255,7 +255,7 @@ class VDiskSetup(CIConstants):
     @classmethod
     @required_vtemplate
     def create_from_template(cls, vdisk_name, vpool_name, new_vdisk_name, storagerouter_ip,
-                             timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT):
+                             timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT, *args, **kwargs):
         """
         Create a new vDisk on a certain vPool/storagerouter
         Set a existing vDisk as vTemplate
@@ -300,7 +300,7 @@ class VDiskSetup(CIConstants):
 
     @classmethod
     @required_vdisk
-    def rollback_to_snapshot(cls, vdisk_name, vpool_name, snapshot_id, timeout=ROLLBACK_VDISK_TIMEOUT):
+    def rollback_to_snapshot(cls, vdisk_name, vpool_name, snapshot_id, timeout=ROLLBACK_VDISK_TIMEOUT, *args, **kwargs):
         """
         Rollback a vdisk to a certain snapshot
 
@@ -335,7 +335,7 @@ class VDiskSetup(CIConstants):
 
     @classmethod
     @required_vdisk
-    def set_config_params(cls, vdisk_name, vpool_name, config, timeout=SET_CONFIG_VDISK_TIMEOUT):
+    def set_config_params(cls, vdisk_name, vpool_name, config, timeout=SET_CONFIG_VDISK_TIMEOUT, *args, **kwargs):
         """
         Rollback a vdisk to a certain snapshot
 

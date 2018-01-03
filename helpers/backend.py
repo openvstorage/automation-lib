@@ -130,7 +130,7 @@ class BackendHelper(CIConstants):
             raise NameError(error_msg)
 
     @classmethod
-    def get_asd_safety(cls, albabackend_guid, asd_id):
+    def get_asd_safety(cls, albabackend_guid, asd_id, *args, **kwargs):
         """
         Request the calculation of the disk safety
         :param albabackend_guid: guid of the alba backend
@@ -151,7 +151,7 @@ class BackendHelper(CIConstants):
         return result[1]
 
     @classmethod
-    def get_backend_local_stack(cls, albabackend_name):
+    def get_backend_local_stack(cls, albabackend_name, *args, **kwargs):
         """
         Fetches the local stack property of a backend
 
