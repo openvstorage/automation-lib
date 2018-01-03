@@ -32,7 +32,7 @@ class RoleSetup(CIConstants):
 
     @classmethod
     @check_role_on_disk
-    def add_disk_role(cls, storagerouter_ip, diskname, roles, min_size=MIN_PARTITION_SIZE):
+    def add_disk_role(cls, storagerouter_ip, diskname, roles, min_size=MIN_PARTITION_SIZE, *args, **kwargs):
 
         """
         Partition and adds roles to a disk
