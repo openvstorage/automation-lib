@@ -14,7 +14,7 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import unittest
-from helpers.setupjsongenerator import SetupJsonGenerator
+from ci.api_lib.helpers.setupjsongenerator import SetupJsonGenerator
 
 
 class JsonGeneratorTestcase(unittest.TestCase):
