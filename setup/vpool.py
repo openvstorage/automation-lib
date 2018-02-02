@@ -13,11 +13,12 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-
 from ovs.lib.generic import GenericController
 from ovs.extensions.generic.logger import Logger
 from ..helpers.backend import BackendHelper
+from ..helpers.storagedriver import StoragedriverHelper
 from ..helpers.storagerouter import StoragerouterHelper
+from ..helpers.vpool import VPoolHelper
 from ..validate.decorators import required_roles, check_vpool
 
 
@@ -74,7 +75,7 @@ class VPoolSetup(object):
         api_data = {'call_parameters': call_parameters}
 
         # Setting for mds_safety
-        if vpool_details['mds_safety']:
+        if vpool_details.get('mds_safety') is not None:
             call_parameters['mds_config_params'] = {'mds_safety': vpool_details['mds_safety']}
 
         # Setting possible alba accelerated alba
@@ -117,7 +118,25 @@ class VPoolSetup(object):
             raise RuntimeError(error_msg)
         else:
             VPoolSetup.LOGGER.info('Creation of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name, storagerouter_ip))
-            return storagerouter_ip, '/mnt/{0}'.format(vpool_name)
+
+        # Settings volumedriver
+        storagedriver_config = {}
+        if vpool_details.get('storagedriver').get('volume_manager') is not None:
+            storagedriver_config['volume_manager'] = vpool_details['storagedriver']['volume_manager']
+        if vpool_details.get('storagedriver').get('backend_connection_manager') is not None:
+            storagedriver_config['backend_connection_manager'] = vpool_details['storagedriver']['backend_connection_manager']
+
+        if storagedriver_config:
+            VPoolSetup.LOGGER.info('Updating volumedriver configuration of vPool `{0}` on storagerouter `{1}`.'.format(vpool_name, storagerouter_ip))
+            vpool = VPoolHelper.get_vpool_by_name(vpool_name)
+            storagedriver = [sd for sd in vpool.storagedrivers if sd.storagerouter.ip == storagerouter_ip][0]
+            if not storagedriver:
+                error_msg = 'Unable to find the storagedriver of vPool {0} on storagerouter {1}'.format(vpool_name, storagerouter_ip)
+                raise RuntimeError(error_msg)
+            StoragedriverHelper.change_config(storagedriver, storagedriver_config)
+            VPoolSetup.LOGGER.info('Updating volumedriver config of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name, storagerouter_ip))
+
+        return storagerouter_ip, '/mnt/{0}'.format(vpool_name)
 
     @staticmethod
     def execute_scrubbing():
