@@ -72,7 +72,11 @@ class VPoolSetup(object):
             'parallelism': {'proxies': proxy_amount}
         }
         api_data = {'call_parameters': call_parameters}
-        
+
+        # Setting for mds_safety
+        if vpool_details['mds_safety']:
+            call_parameters['mds_config_params'] = {'mds_safety': vpool_details['mds_safety']}
+
         # Setting possible alba accelerated alba
         if vpool_details['fragment_cache']['location'] == 'backend':
             call_parameters['backend_info_aa'] = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['fragment_cache']['backend']['name']).guid,
