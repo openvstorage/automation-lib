@@ -14,18 +14,12 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import json
-
-try:
-    from ovs.extensions.services.service import ServiceManager
-except ImportError:
-    from ovs.extensions.services.servicefactory import ServiceFactory
-    ServiceManager = ServiceFactory.get_manager()
-
 from ovs.dal.hybrids.storagedriver import StorageDriver
 from ovs.dal.lists.storagedriverlist import StorageDriverList
 from ovs.extensions.generic.configuration import Configuration
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.logger import Logger
+from ovs.extensions.services.servicefactory import ServiceFactory
 
 
 class StoragedriverHelper(object):
@@ -95,7 +89,7 @@ class StoragedriverHelper(object):
         :type config: dict
         :return:
         """
-
+        service_manager = ServiceFactory.get_manager()
         config_key = '/ovs/vpools/{0}/hosts/{1}/config'.format(storagedriver.vpool.guid, storagedriver.name)
         current_config = Configuration.get(config_key)
 
@@ -122,6 +116,6 @@ class StoragedriverHelper(object):
 
         if len(storagedriver.vdisks_guids) == 0:
             StoragedriverHelper.LOGGER.info("Restarting service: {0}".format(service_name))
-            ServiceManager.restart_service(service_name, client)
+            service_manager.restart_service(service_name, client)
         else:
             StoragedriverHelper.LOGGER.info("Not restarting service: {0}, amount of vdisks: {1}".format(service_name, len(storagedriver.vdisks_guids)))
