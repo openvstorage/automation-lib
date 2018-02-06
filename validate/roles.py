@@ -15,6 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.extensions.generic.logger import Logger
 from ..helpers.disk import DiskHelper
+from ..helpers.storagerouter import StoragerouterHelper
 
 
 class RoleValidation(object):
@@ -31,7 +32,7 @@ class RoleValidation(object):
 
         :param roles: the required roles
         :type roles: list
-        :param storagerouter_ip: ip address of a storagerouter
+        :param storagerouter_ip: guid of a storagerouter
         :type storagerouter_ip: str
         :param location:
             * GLOBAL: checks the whole cluster if certain roles are available
@@ -39,11 +40,12 @@ class RoleValidation(object):
         :type location: str
         :return: None
         """
-
         # fetch availabe roles
         if location == "LOCAL":
             # LOCAL
-            available_roles = DiskHelper.get_roles_from_disks(storagerouter_ip=storagerouter_ip)
+            storagerouter_guid = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid
+
+            available_roles = DiskHelper.get_roles_from_disks(storagerouter_guid=storagerouter_guid)
         else:
             # GLOBAL
             available_roles = DiskHelper.get_roles_from_disks()
@@ -62,7 +64,7 @@ class RoleValidation(object):
 
             # append storagerouter_ip if searching on a LOCAL node
             if location == "LOCAL":
-                error_msg += " on storagerouter {0}".format(storagerouter_ip)
+                error_msg += " on storagerouter {0}".format(storagerouter_guid)
 
             RoleValidation.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
@@ -82,4 +84,5 @@ class RoleValidation(object):
         :return: if available on disk
         :rtype: bool
         """
-        return len(set(roles).difference(set(DiskHelper.get_roles_from_disk(storagerouter_ip, disk_name)))) == 0
+        storagerouter_guid = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid
+        return len(set(roles).difference(set(DiskHelper.get_roles_from_disk(storagerouter_guid, disk_name)))) == 0

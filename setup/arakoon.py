@@ -21,6 +21,7 @@ from ovs.extensions.generic.sshclient import SSHClient
 from ovs.lib.alba import AlbaController
 from ..helpers.backend import BackendHelper
 from ..validate.decorators import required_backend, required_arakoon_cluster
+from ..validate.backend import BackendValidation
 
 
 class ArakoonSetup(object):
@@ -159,3 +160,44 @@ class ArakoonSetup(object):
         """
         alba_backend_guid = BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
         return AlbaController.nsm_checkup(backend_guid=alba_backend_guid, min_nsms=int(amount))
+
+
+    @staticmethod
+    def setup_external_arakoons(backend):
+        """
+        Setup external arakoons for a backend
+
+        :param backend: all backend details
+        :type backend: dict
+        :return: mapped external arakoons
+        :rtype: dict
+        """
+
+        # if backend does not exists, deploy the external arakoons
+        if not BackendValidation.check_backend(backend_name=backend['name']):
+            external_arakoon_mapping = {}
+            for ip, arakoons in backend['external_arakoon'].iteritems():
+                for arakoon_name, arakoon_settings in arakoons.iteritems():
+                    # check if we already created one or not
+                    if arakoon_name not in external_arakoon_mapping:
+                        # if not created yet, create one and map it
+                        external_arakoon_mapping[arakoon_name] = {}
+                        external_arakoon_mapping[arakoon_name]['master'] = ip
+                        external_arakoon_mapping[arakoon_name]['all'] = [ip]
+                        ArakoonSetup.add_arakoon(cluster_name=arakoon_name, storagerouter_ip=ip,
+                                                 cluster_basedir=arakoon_settings['base_dir'],
+                                                 service_type=arakoon_settings['type'])
+                    else:
+                        # if created, extend it and map it
+                        external_arakoon_mapping[arakoon_name]['all'].append(ip)
+                        ArakoonSetup.extend_arakoon(cluster_name=arakoon_name,
+                                                    master_storagerouter_ip=external_arakoon_mapping[arakoon_name]['master'],
+                                                    storagerouter_ip=ip,
+                                                    cluster_basedir=arakoon_settings['base_dir'],
+                                                    service_type=arakoon_settings['type'],
+                                                    clustered_nodes=external_arakoon_mapping[arakoon_name]['all'])
+            return external_arakoon_mapping
+        else:
+            ArakoonSetup.LOGGER.info("Skipping external arakoon creation because backend `{0}` already exists"
+                                 .format(backend['name']))
+            return

@@ -16,39 +16,73 @@
 Hypervisor/ManagementCenter factory module
 Using the module requires libvirt api to be available on the MACHINE THAT EXECUTES THE CODE
 """
-
 from ovs_extensions.generic.filemutex import file_mutex
+from ovs.lib.helpers.toolbox import Toolbox
+from ...helpers.ci_constants import CIConstants
 
 
-class HypervisorFactory(object):
+class HypervisorFactory(CIConstants):
     """
     HypervisorFactory class provides functionality to get abstracted hypervisor
     """
-
     hypervisors = {}
 
-    @staticmethod
-    def get(ip, username, password, hvtype):
+    @classmethod
+    def get(cls, hv_credentials=None):
         """
         Returns the appropriate hypervisor client class for a given PMachine
+        :param hv_credentials: object that contains ip, user, password and hypervisor type
+        :type hv_credentials: HypervisorCredentials object
         """
-        key = '{0}_{1}'.format(ip, username)
-        if key not in HypervisorFactory.hypervisors:
-            mutex = file_mutex('hypervisor_{0}'.format(key))
-            try:
-                mutex.acquire(30)
-                if key not in HypervisorFactory.hypervisors:
-                    if hvtype == 'VMWARE':
-                        # Not yet tested. Needs to be rewritten
-                        raise NotImplementedError("{0} has not yet been implemented".format(hvtype))
-                        from .hypervisors.vmware import VMware
-                        hypervisor = VMware(ip, username, password)
-                    elif hvtype == 'KVM':
-                        from .hypervisors.kvm import KVM
-                        hypervisor = KVM(ip, username, password)
-                    else:
-                        raise NotImplementedError('Hypervisor {0} is not yet supported'.format(hvtype))
-                    HypervisorFactory.hypervisors[key] = hypervisor
-            finally:
-                mutex.release()
-        return HypervisorFactory.hypervisors[key]
+        if hv_credentials is None:
+            return cls.get(HypervisorCredentials(ip=CIConstants.HYPERVISOR_INFO['ip'],
+                                               user=CIConstants.HYPERVISOR_INFO['user'],
+                                               password=CIConstants.HYPERVISOR_INFO['password'],
+                                               type=CIConstants.HYPERVISOR_INFO['type']))
+        if not isinstance(hv_credentials, HypervisorCredentials):
+            raise TypeError('Credentials must be of type HypervisorCredentials')
+        return cls.hypervisors.get(hv_credentials, cls._add_hypervisor(hv_credentials))
+
+    @staticmethod
+    def _add_hypervisor(hypervisor_credentials):
+        ip = hypervisor_credentials.ip
+        username = hypervisor_credentials.user
+        password = hypervisor_credentials.password
+        hvtype = hypervisor_credentials.type
+        mutex = file_mutex('hypervisor_{0}'.format(hash(hypervisor_credentials)))
+        try:
+            mutex.acquire(30)
+            if hypervisor_credentials not in HypervisorFactory.hypervisors:
+                if hvtype == 'VMWARE':
+                    # Not yet tested. Needs to be rewritten
+                    raise NotImplementedError("{0} has not yet been implemented".format(hvtype))
+                    from .hypervisors.vmware import VMware
+                    hypervisor = VMware(ip, username, password)
+                elif hvtype == 'KVM':
+                    from .hypervisors.kvm import KVM
+                    hypervisor = KVM(ip, username, password)
+                else:
+                    raise NotImplementedError('Hypervisor {0} is not yet supported'.format(hvtype))
+                HypervisorFactory.hypervisors[hypervisor_credentials] = hypervisor
+            return hypervisor
+        finally:
+            mutex.release()
+
+
+class HypervisorCredentials(object):
+    def __init__(self, ip, user, password, type):
+        required_params = {'ip': (str, Toolbox.regex_ip),
+                           'user': (str, None),
+                           'password': (str, None),
+                           'type': (str, ['KVM', 'VMWARE'])}
+        Toolbox.verify_required_params(required_params, {'ip': ip,
+                                                         'user': user,
+                                                         'password': password,
+                                                         'type': type})
+        self.ip = ip
+        self.user = user
+        self.password = password
+        self.type = type
+
+    def __str__(self):
+        return 'hypervisor at ip {0} of type {1}'.format(self.ip, self.type)

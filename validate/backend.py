@@ -52,7 +52,7 @@ class BackendValidation(object):
     @staticmethod
     def check_policies_on_preset(preset_name, albabackend_name, policies):
         """
-        Check if a preset is available on a backend
+        Check if given policies match with the specified backend
 
         :param preset_name: name of a preset
         :type preset_name: str
@@ -126,16 +126,17 @@ class BackendValidation(object):
             slot_map[disk_name] = fetched_disk
         available_disks = {}
         for disk, amount_asds in disks.iteritems():
+
             # check if requested disk is present and available in fetched_disks
             if disk not in slot_map:
-                BackendValidation.LOGGER.error("Disk `{0}` was NOT found on node `{1}`!".format(ip, disk))
+                BackendValidation.LOGGER.error("Disk `{0}` was NOT found on node `{1}`!".format(disk, ip))
                 continue
             if slot_map[disk]['available'] is False:
-                BackendValidation.LOGGER.error("Disk `{0}` is NOT available on node `{1}`!".format(ip, disk))
+                BackendValidation.LOGGER.error("Disk `{0}` is NOT available on node `{1}`!".format(disk, ip))
                 continue
             # add disk to available disks
             available_disks[disk] = amount_asds
-            BackendValidation.LOGGER.info("Disk `{0}` is available on node `{1}`!".format(ip, disk))
+            BackendValidation.LOGGER.info("Disk `{0}` is available on node `{1}`!".format(disk, ip))
         BackendValidation.LOGGER.info("The following disks are available for use on `{0}`: {1}".format(ip, available_disks))
 
         return available_disks
