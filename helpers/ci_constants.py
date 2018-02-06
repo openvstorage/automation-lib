@@ -24,14 +24,10 @@ class CIConstants(object):
 
     CONFIG_LOC = "/opt/OpenvStorage/ci/config/setup.json"
     TEST_SCENARIO_LOC = "/opt/OpenvStorage/ci/scenarios/"
-    SETTINGS_LOC = "/opt/OpenvStorage/ci/config/settings.json"
     TESTRAIL_LOC = "/opt/OpenvStorage/ci/config/testrail.json"
 
     with open(CONFIG_LOC, 'r') as JSON_CONFIG:
         SETUP_CFG = json.load(JSON_CONFIG)
-
-    with open(SETTINGS_LOC, 'r') as JSON_SETTINGS:
-        SETTINGS = json.load(JSON_SETTINGS)
 
     HYPERVISOR_INFO = SETUP_CFG['ci'].get('hypervisor')
     DOMAIN_INFO = SETUP_CFG['setup']['domains']
