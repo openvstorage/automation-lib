@@ -14,7 +14,6 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.lib.generic import GenericController
-from ovs.extensions.generic.logger import Logger
 from ovs.lib.helpers.toolbox import Toolbox
 from ovs.log.log_handler import LogHandler
 from ..helpers.backend import BackendHelper
