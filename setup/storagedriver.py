@@ -20,7 +20,7 @@ from ..helpers.vpool import VPoolHelper
 
 
 class StoragedriverSetup(object):
-    LOGGER = LogHandler.get(source='setup', name='ci_vpool_setup')
+    LOGGER = LogHandler.get(source='setup', name='ci_storagedriver_setup')
 
     # These will be all possible settings for the StorageDriver. Messing them up is their own responsibility (they should not bypass the API by default!!)
     STORAGEDRIVER_PARAMS = {"volume_manager": (dict, None, False),
@@ -33,17 +33,12 @@ class StoragedriverSetup(object):
         storagedriver_config = vpool_details.get('storagedriver')
         if storagedriver_config is not None:
             Toolbox.verify_required_params(StoragedriverSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
-            StoragedriverSetup.LOGGER.info(
-                'Updating volumedriver configuration of vPool `{0}` on storagerouter `{1}`.'.format(vpool_name,
-                                                                                                    storagerouter_ip))
+            StoragedriverSetup.LOGGER.info('Updating volumedriver configuration of vPool `{0}` on storagerouter `{1}`.'.format(vpool_name, storagerouter_ip))
             vpool = VPoolHelper.get_vpool_by_name(vpool_name)
             storagedriver = [sd for sd in vpool.storagedrivers if sd.storagerouter.ip == storagerouter_ip][0]
             if not storagedriver:
-                error_msg = 'Unable to find the storagedriver of vPool {0} on storagerouter {1}'.format(vpool_name,
-                                                                                                        storagerouter_ip)
+                error_msg = 'Unable to find the storagedriver of vPool {0} on storagerouter {1}'.format(vpool_name, storagerouter_ip)
                 raise RuntimeError(error_msg)
             StoragedriverHelper.change_config(storagedriver, storagedriver_config)
             vpool.invalidate_dynamics('configuration')
-            StoragedriverSetup.LOGGER.info(
-                'Updating volumedriver config of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(
-                    vpool_name, storagerouter_ip))
+            StoragedriverSetup.LOGGER.info('Updating volumedriver config of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name, storagerouter_ip))
