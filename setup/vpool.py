@@ -29,10 +29,6 @@ class VPoolSetup(object):
     ADD_VPOOL_TIMEOUT = 500
     REQUIRED_VPOOL_ROLES = ['DB', 'WRITE', 'DTL']
 
-    # These will be all possible settings for the StorageDriver. Messing them up is their own responsibility (they should not bypass the API by default!!)
-    STORAGEDRIVER_PARAMS = {"volume_manager": (dict, None, False),
-                            "backend_connection_manager": (dict, None, False)}
-
     def __init__(self):
         pass
 
@@ -123,21 +119,7 @@ class VPoolSetup(object):
             raise RuntimeError(error_msg)
         else:
             VPoolSetup.LOGGER.info('Creation of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name, storagerouter_ip))
-
-        # Settings volumedriver
-        storagedriver_config = vpool_details.get('storagedriver')
-        if storagedriver_config is not None:
-            Toolbox.verify_required_params(VPoolSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
-            VPoolSetup.LOGGER.info('Updating volumedriver configuration of vPool `{0}` on storagerouter `{1}`.'.format(vpool_name, storagerouter_ip))
-            vpool = VPoolHelper.get_vpool_by_name(vpool_name)
-            storagedriver = [sd for sd in vpool.storagedrivers if sd.storagerouter.ip == storagerouter_ip][0]
-            if not storagedriver:
-                error_msg = 'Unable to find the storagedriver of vPool {0} on storagerouter {1}'.format(vpool_name, storagerouter_ip)
-                raise RuntimeError(error_msg)
-            StoragedriverHelper.change_config(storagedriver, storagedriver_config)
-            VPoolSetup.LOGGER.info('Updating volumedriver config of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name, storagerouter_ip))
-
-        return storagerouter_ip, '/mnt/{0}'.format(vpool_name)
+            return storagerouter_ip, '/mnt/{0}'.format(vpool_name)
 
     @staticmethod
     def execute_scrubbing():
