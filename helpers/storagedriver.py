@@ -17,8 +17,8 @@ import json
 from ovs.dal.hybrids.storagedriver import StorageDriver
 from ovs.dal.lists.storagedriverlist import StorageDriverList
 from ovs.extensions.generic.configuration import Configuration
-from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.logger import Logger
+from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.services.servicefactory import ServiceFactory
 
 
