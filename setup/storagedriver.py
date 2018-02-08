@@ -14,13 +14,13 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.lib.helpers.toolbox import Toolbox
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.storagedriver import StoragedriverHelper
 from ..helpers.vpool import VPoolHelper
 
 
 class StoragedriverSetup(object):
-    LOGGER = LogHandler.get(source='setup', name='ci_storagedriver_setup')
+    LOGGER = Logger('setup-ci_storagedriver_setup')
 
     # These will be all possible settings for the StorageDriver. Messing them up is their own responsibility (they should not bypass the API by default!!)
     STORAGEDRIVER_PARAMS = {"volume_manager": (dict, None, False),
