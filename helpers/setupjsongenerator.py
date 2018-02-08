@@ -18,6 +18,7 @@ import json
 from ci.autotests import AutoTests
 from ovs.dal.hybrids.albabackend import AlbaBackend
 from ovs.dal.hybrids.diskpartition import DiskPartition
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
 from ovs.extensions.storageserver.storagedriver import StorageDriverClient
 from ovs.lib.helpers.toolbox import Toolbox
 
@@ -103,7 +104,8 @@ class SetupJsonGenerator(object):
                       'config_manager': 'arakoon'}
 
         all_params.update(ci_params)
-        Toolbox.verify_required_params(required_params=params_layout, actual_params=all_params, verify_keys=True)
+
+        ExtensionsToolbox.verify_required_params(required_params=params_layout, actual_params=all_params, verify_keys=True)
 
         if os.system('ping -c 1 {}'.format(all_params['grid_ip'])) != 0:
             raise ValueError('No response from ip {0}'.format(all_params['grid_ip']))
@@ -212,7 +214,7 @@ class SetupJsonGenerator(object):
         """
         self._validate_ip(storagerouter_ip)
         required_params = {'hostname': (str, None, True)}
-        Toolbox.verify_required_params(required_params=required_params, actual_params={'hostname': hostname}, verify_keys=True)
+        ExtensionsToolbox.verify_required_params(required_params=required_params, actual_params={'hostname': hostname}, verify_keys=True)
         if 'setup' not in self.config.keys():
             self.config['setup'] = {}
         if 'storagerouters' in self.config['setup'].keys():
@@ -246,7 +248,7 @@ class SetupJsonGenerator(object):
         """
         self._valid_storagerouter(storagerouter_ip)
         required_params = {'name': (str, None, True), 'roles': (list, None, True)}
-        Toolbox.verify_required_params(required_params=required_params, actual_params={'name': name, 'roles': roles}, verify_keys=True)
+        ExtensionsToolbox.verify_required_params(required_params=required_params, actual_params={'name': name, 'roles': roles}, verify_keys=True)
         for role in roles:
             if role not in DiskPartition.ROLES:
                 raise ValueError('Provided role {0} is not an allowed role for disk {1}.'.format(role, name))
@@ -279,7 +281,7 @@ class SetupJsonGenerator(object):
         :type recovery: bool
         """
         self._valid_storagerouter(storagerouter_ip)
-        Toolbox.verify_required_params(required_params={'name': (str, None, True)}, actual_params={'name': name}, verify_keys=True)
+        ExtensionsToolbox.verify_required_params(required_params={'name': (str, None, True)}, actual_params={'name': name}, verify_keys=True)
 
         if name not in self._domains:
             raise ValueError('Invalid domain passed: {0}'.format(name))
@@ -323,7 +325,7 @@ class SetupJsonGenerator(object):
                 if domain_name not in self._domains:
                     raise ValueError('Invalid domain passed: {0}'.format(domain_name))
 
-        Toolbox.verify_required_params(required_params={'backend_name': (str, Toolbox.regex_backend, True),
+        ExtensionsToolbox.verify_required_params(required_params={'backend_name': (str, Toolbox.regex_backend, True),
                                                         'domains': (list, self._domains, True),
                                                         'scaling': (str, AlbaBackend.SCALINGS, True)},
                                        actual_params={'backend_name': backend_name,
@@ -381,7 +383,7 @@ class SetupJsonGenerator(object):
         if fragment_size is not None and (not isinstance(fragment_size, int) or not 16 <= fragment_size <= 1024 ** 3):
             raise ValueError('Fragment size should be a positive integer smaller than 1 GiB')
 
-        Toolbox.verify_required_params(required_params={'backend_name': (str, Toolbox.regex_backend, True),
+        ExtensionsToolbox.verify_required_params(required_params={'backend_name': (str, Toolbox.regex_backend, True),
                                                         'preset_name': (str, Toolbox.regex_preset, True),
                                                         'policies': (list, None, True),
                                                         'fragment_size': (int, None, False)},
@@ -450,7 +452,7 @@ class SetupJsonGenerator(object):
                          'osds_on_disk': osds_on_disks,
                          'linked_backend': linked_backend,
                          'linked_preset': linked_preset}
-        Toolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
+        ExtensionsToolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
 
         osd_dict = {}
         for index, backend in enumerate(self.config['setup']['backends']):
@@ -519,7 +521,7 @@ class SetupJsonGenerator(object):
                          'preset_name': preset_name,
                          'storage_ip': storage_ip}
 
-        Toolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
+        ExtensionsToolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
         self._valid_storagerouter(storagerouter_ip=storagerouter_ip)
         self._validate_ip(ip=storage_ip)
         if backend_name not in self._backends:
@@ -580,7 +582,7 @@ class SetupJsonGenerator(object):
                          'fragment_cache': fragment_cache,
                          'on_read': on_read,
                          'on_write': on_write}
-        Toolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
+        ExtensionsToolbox.verify_required_params(required_params=required_params, actual_params=actual_params, verify_keys=True)
         try:
             vpool = self.config['setup']['storagerouters'][storagerouter_ip]['vpools'][vpool]
         except KeyError:
@@ -626,7 +628,7 @@ class SetupJsonGenerator(object):
         default_params.update(sr_params)
         if not isinstance(default_params, dict):
             raise ValueError('Parameters should be of type "dict"')
-        Toolbox.verify_required_params(required_params, default_params)
+        ExtensionsToolbox.verify_required_params(required_params, default_params)
         if sr_ip not in self.config['setup']['storagerouters'].keys():
             raise KeyError('Storagerouter with ip is not defined')
         if vpool_name not in self.config['setup']['storagerouters'][sr_ip]['vpools']:
@@ -654,7 +656,7 @@ class SetupJsonGenerator(object):
     def _validate_ip(self, ip):
         required_params = {'storagerouter_ip': (str, Toolbox.regex_ip, True)}
         try:
-            Toolbox.verify_required_params(required_params=required_params, actual_params={'storagerouter_ip': ip}, verify_keys=True)
+            ExtensionsToolbox.verify_required_params(required_params=required_params, actual_params={'storagerouter_ip': ip}, verify_keys=True)
         except RuntimeError as e:
             raise ValueError(e)
         if os.system('ping -c 1 {0}'.format(ip)) != 0:

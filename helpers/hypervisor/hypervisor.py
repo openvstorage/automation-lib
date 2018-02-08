@@ -17,6 +17,7 @@ Hypervisor/ManagementCenter factory module
 Using the module requires libvirt api to be available on the MACHINE THAT EXECUTES THE CODE
 """
 from ovs_extensions.generic.filemutex import file_mutex
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
 from ovs.lib.helpers.toolbox import Toolbox
 from ...helpers.ci_constants import CIConstants
 
@@ -75,7 +76,7 @@ class HypervisorCredentials(object):
                            'user': (str, None),
                            'password': (str, None),
                            'type': (str, ['KVM', 'VMWARE'])}
-        Toolbox.verify_required_params(required_params, {'ip': ip,
+        ExtensionsToolbox.verify_required_params(required_params, {'ip': ip,
                                                          'user': user,
                                                          'password': password,
                                                          'type': type})
