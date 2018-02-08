@@ -15,7 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.extensions.generic.logger import Logger
-from ovs.lib.helpers.toolbox import Toolbox
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
 from ovs.lib.generic import GenericController
 from ..helpers.backend import BackendHelper
 from ..helpers.ci_constants import CIConstants
@@ -127,7 +127,7 @@ class VPoolSetup(CIConstants):
         # Settings volumedriver
         storagedriver_config = vpool_details.get('storagedriver')
         if storagedriver_config is not None:
-            Toolbox.verify_required_params(VPoolSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
+            ExtensionsToolbox.verify_required_params(VPoolSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
             VPoolSetup.LOGGER.info('Updating volumedriver configuration of vPool `{0}` on storagerouter `{1}`.'.format(vpool_name, storagerouter_ip))
             vpool = VPoolHelper.get_vpool_by_name(vpool_name)
             storagedriver = [sd for sd in vpool.storagedrivers if sd.storagerouter.ip == storagerouter_ip][0]

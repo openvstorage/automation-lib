@@ -25,7 +25,7 @@ import libvirt
 from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
-from ovs.lib.helpers.toolbox import Toolbox
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 # Relative
@@ -627,7 +627,7 @@ class Sdk(object):
                                     'hostname': (str, None),
                                     'username': (str, None, False),
                                     'password': (str, None, False)}
-            Toolbox.verify_required_params(required_edge_params, edge_configuration)
+            ExtensionsToolbox.verify_required_params(required_edge_params, edge_configuration)
             ovs_vm = True
         command = ['virt-install']
         options = ['--connect=qemu+ssh://{0}@{1}/system'.format(self.login, self.host),
