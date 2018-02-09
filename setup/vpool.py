@@ -13,10 +13,12 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
+from ovs.extensions.generic.configuration import Configuration
 from ovs.lib.generic import GenericController
 from ovs.log.log_handler import LogHandler
 from ..helpers.backend import BackendHelper
 from ..helpers.storagerouter import StoragerouterHelper
+from ..helpers.vpool import VPoolHelper
 from ..validate.decorators import required_roles, check_vpool
 
 
@@ -72,10 +74,6 @@ class VPoolSetup(object):
         }
         api_data = {'call_parameters': call_parameters}
 
-        # Setting for mds_safety
-        if vpool_details.get('mds_safety') is not None:
-            call_parameters['mds_config_params'] = {'mds_safety': vpool_details['mds_safety']}
-
         # Setting possible alba accelerated alba
         if vpool_details['fragment_cache']['location'] == 'backend':
             call_parameters['backend_info_aa'] = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['fragment_cache']['backend']['name']).guid,
@@ -116,6 +114,20 @@ class VPoolSetup(object):
             raise RuntimeError(error_msg)
         else:
             VPoolSetup.LOGGER.info('Creation of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name, storagerouter_ip))
+
+            if vpool_details.get('mds_safety') is not None:
+                vpool = VPoolHelper.get_vpool_by_name(vpool_name)
+
+                if vpool:
+                    mds_config_path = '/ovs/vpools/{0}/mds_config'.format(vpool.guid)
+                    mds_config = Configuration.get(mds_config_path)
+                    mds_config['mds_safety'] = vpool_details.get('mds_safety')
+                    Configuration.set(mds_config_path, mds_config)
+                else:
+                    error_msg = 'Unable to change the mds safety of vPool {0}.'.format(vpool_name)
+                    VPoolSetup.LOGGER.error(error_msg)
+                    raise RuntimeError(error_msg)
+
             return storagerouter_ip, '/mnt/{0}'.format(vpool_name)
 
     @staticmethod
