@@ -129,12 +129,3 @@ class SystemHelper(object):
             elif service_state == activating_state:
                 activating_services.append(service)
         return {'active': active_services, 'failed': failed_service, 'activating': activating_services}
-
-    @classmethod
-    def get_my_storagerouter(cls):
-        """
-        Returns unique machine storagerouter id
-        :return: Storage Router this is executed on
-        :rtype: StorageRouter
-        """
-        return System.get_my_storagerouter()
