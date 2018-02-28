@@ -25,7 +25,8 @@ class ThreadHelper(object):
     @staticmethod
     def start_thread_with_event(target, name, args=(), kwargs=None):
         """
-        Starts a thread and an event to it
+        Starts a thread and an event to it.
+        The passed target function needs to accept an param 'event' which will contain the stopEvent object
         :param target: target - usually a method
         :type target: object
         :param name: name of the thread
@@ -37,9 +38,11 @@ class ThreadHelper(object):
         """
         if kwargs is None:
             kwargs = {}
+        if 'event' in kwargs:
+            raise ValueError('event is a reserved keyword of this function')
         ThreadHelper.LOGGER.info('Starting thread with target {0}'.format(target))
         event = threading.Event()
-        args = args + (event,)
+        kwargs['event'] = event
         thread = threading.Thread(target=target, args=tuple(args), kwargs=kwargs)
         thread.setName(str(name))
         thread.setDaemon(True)

@@ -43,3 +43,13 @@ class CIConstants(object):
         return OVSClient(cls.SETUP_CFG['ci']['grid_ip'],
                          cls.SETUP_CFG['ci']['user']['api']['username'],
                          cls.SETUP_CFG['ci']['user']['api']['password'])
+
+    @classmethod
+    def get_vpool_names(cls):
+        names = []
+        for sr_ip, items in cls.STORAGEROUTER_INFO.iteritems():
+            vpools = items.get('vpools')
+            for vp_name, vp_info in vpools.iteritems():
+                if vp_name not in names:
+                    names.append(vp_name)
+        return names
