@@ -25,7 +25,7 @@ import libvirt
 from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
-from ovs.lib.helpers.toolbox import Toolbox
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 # Relative
@@ -627,7 +627,7 @@ class Sdk(object):
                                     'hostname': (str, None),
                                     'username': (str, None, False),
                                     'password': (str, None, False)}
-            Toolbox.verify_required_params(required_edge_params, edge_configuration)
+            ExtensionsToolbox.verify_required_params(required_edge_params, edge_configuration)
             ovs_vm = True
         command = ['virt-install']
         options = ['--connect=qemu+ssh://{0}@{1}/system'.format(self.login, self.host),
@@ -673,6 +673,160 @@ class Sdk(object):
             logger.exception(msg)
             print ' '.join(command+options)
             raise RuntimeError(msg)
+
+    def create_vm_from_cloud_init(self, name, vcpus, ram, boot_disk_size, bridge, ip, netmask, gateway, nameserver, amount_disks, size,
+                                  mountpoint, cloud_init_url, cloud_init_name, root_password, force=False):
+        """
+        Create vm from cloud init
+        :param name: Name of the vm
+        :param vcpus: amount of vcpus
+        :param ram: amount of ram (MB)
+        :param boot_disk_size: size of the boot disks (notation xGB)
+        :param bridge: network bridge name
+        :param ip: ip of the vm
+        :param netmask: netmask
+        :param gateway: gateway
+        :param nameserver: dns ip
+        :param amount_disks: amount of extra disks
+        :param size: size of the extra disks (notation xGB)
+        :param mountpoint: where the extra disks should be created
+        :param cloud_init_url: cloud init url
+        :param cloud_init_name: vmdk template name
+        :param root_password: root password of the vm
+        :param force: remove vm with the same name or used disks
+        :return:
+        """
+
+        template_directory = '/var/lib/libvirt/images'
+        vmdk_file = "{0}/{1}.vmdk".format(template_directory, cloud_init_name)
+        qcow_file = "{0}/{1}.qcow2".format(template_directory, cloud_init_name)
+        # Check if cloud_init already exists if not download vmdk
+        if not self.ssh_client.file_exists(vmdk_file):
+            self.ssh_client.run(["wget", "-O", vmdk_file, cloud_init_url])
+
+        if not self.ssh_client.file_exists(qcow_file):
+            self.ssh_client.run(["qemu-img", "convert", "-O", "qcow2", vmdk_file, qcow_file])
+
+        vm_directory = "{0}/{1}".format(template_directory, name)
+        user_data = "{0}/user-data".format(vm_directory)
+        meta_data = "{0}/meta-data".format(vm_directory)
+        ci_iso = "{0}/{1}.iso".format(vm_directory, name)
+        boot_disk = "{0}/{1}.qcow2".format(vm_directory, name)
+
+        meta_data_lines = [
+            'instance-id: {0}'.format(uuid.uuid1()),
+            'local-hostname: {0}'.format(name),
+            'network-interfaces: |',
+            '  auto ens3',
+            '  iface ens3 inet static',
+            '  address {0}'.format(ip),
+            '  netmask {0}'.format(netmask),
+            '  gateway {0}'.format(gateway),
+            'manage_resolve_conf: True',
+            'resolv_conf:',
+            '  nameservers:[{0}]'.format(nameserver),
+            ''
+        ]
+
+        user_data_lines = [
+            '#cloud-config',
+            'hostname: {0}'.format(name),
+            'manage_etc_hosts: True',
+            'disable_root: False',
+            'password: {0}'.format(root_password),
+            'ssh_pwauth: True',
+            'chpasswd:',
+            '  list: |',
+            '    root:{0}'.format(root_password),
+            '    ubuntu:{0}'.format(root_password),
+            '  expire: False',
+            'runcmd:',
+            '  - [sed, -ie, "s/PermitRootLogin prohibit-password/PermitRootLogin yes/", /etc/ssh/sshd_config]',
+            '  - [sed, -ie, "s/PasswordAuthentication no/PasswordAuthentication yes/", /etc/ssh/sshd_config]',
+            '  - [service, ssh, restart]',
+            ''
+        ]
+
+        # Check if vm already exists with this name
+        vm = None
+
+        try:
+            vm = self._conn.lookupByName(name)
+        except libvirt.libvirtError:
+            pass
+
+        if vm and force:
+            self.delete_vm(vm, True)
+        elif vm and not force:
+            raise Exception('VM {0} is still defined on this hypervisor. Use the force=True option to delete.'.format(name))
+
+        if self.ssh_client.dir_exists(vm_directory):
+            exists, used_disk, vm_name = self._check_disks_in_use([ci_iso, boot_disk])
+            if exists:
+                raise Exception("Virtual Disk {0} in used by {1}".format(used_disk, vm_name))
+
+            self.ssh_client.dir_delete(vm_directory)
+
+        self.ssh_client.dir_create(vm_directory)
+        # Copy template image
+        self.ssh_client.run(["cp", qcow_file, boot_disk])
+
+        # Resize image
+        self.ssh_client.run(["qemu-img", "resize", boot_disk, boot_disk_size])
+
+        # Create metadata and user data file
+        self.ssh_client.file_write(meta_data, '\n'.join(meta_data_lines))
+
+        self.ssh_client.file_write(user_data, '\n'.join(user_data_lines))
+
+        # Generate iso for cloud-init
+        self.ssh_client.run(["genisoimage", "-output", ci_iso, "-volid", "cidata", "-joliet", "-r", user_data, meta_data])
+
+        # Create extra disks
+        all_disks = [{'mountpoint': boot_disk, "format": "qcow2", "bus": "virtio"}]
+
+        if amount_disks > 0 and size > 0:
+            if not self.ssh_client.dir_exists(mountpoint):
+                raise Exception("Directory {0} doesn't exists.".format(mountpoint))
+
+            for i in xrange(1, amount_disks+1):
+                disk_path = "{0}/{1}_{2:02d}.qcow2".format(mountpoint, name, i,)
+                exists, used_disk, vm_name = self._check_disks_in_use([disk_path])
+                disk_exists_filesystem = self.ssh_client.file_exists(disk_path)
+                if disk_exists_filesystem and exists:
+                    raise Exception("Virtual Disk {0} in used by {1}".format(used_disk, vm_name))
+                elif disk_exists_filesystem:
+                    self.ssh_client.file_delete(disk_path)
+
+                self.ssh_client.run(['qemu-img', 'create', '-f', 'qcow2', disk_path, size])
+                all_disks.append({'mountpoint': disk_path, "format": "qcow2", "bus": "virtio"})
+
+        self.create_vm(name=name, vcpus=vcpus, ram=ram, disks=all_disks, cdrom_iso=ci_iso,
+                       networks=[{"bridge": bridge, "model": "virtio"}], start=True)
+
+    def _check_disks_in_use(self, disk_paths):
+        """
+        Check if disks are in used
+        :param disks: list of disk paths
+        :type disks: list
+        :return: bool
+        """
+        for dom in self.get_vms():
+            dom_info = ElementTree.fromstring(dom.XMLDesc(0))
+            disks = dom_info.findall('.//disk')
+            for disk in disks:
+                if disk.find('source') is None:
+                    continue
+                used_disk = disk.find('source').get('file')
+                if used_disk in disk_paths:
+                    try:
+                        return True, used_disk, dom_info.find('name').text
+                    except AttributeError as ex:
+                        msg = "Error during checking of VM's disks. Got {0}".format(str(ex))
+                        logger.exception(msg)
+                        return True, used_disk, 'Unknown vm name'
+
+        return False, '', ''
 
     @staticmethod
     def _update_xml_for_ovs(xml, edge_configuration):

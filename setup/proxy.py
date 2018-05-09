@@ -1,4 +1,5 @@
 # Copyright (C) 2016 iNuron NV
+# Copyright (C) 2016 iNuron NV
 #
 # This file is part of Open vStorage Open Source Edition (OSE),
 # as available from
@@ -17,6 +18,7 @@ import json
 from ovs.dal.lists.vpoollist import VPoolList
 from ovs.extensions.generic.configuration import Configuration
 from ovs.extensions.generic.logger import Logger
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
 from ovs.extensions.services.servicefactory import ServiceFactory
 from ovs.lib.helpers.toolbox import Toolbox
 from ovs.dal.hybrids.service import Service
@@ -48,7 +50,7 @@ class ProxySetup(object):
         faulty_keys = [key for key in proxy_configuration.keys() if key not in ProxySetup.PARAMS]
         if len(faulty_keys) > 0:
             raise ValueError('{0} are unsupported keys for proxy configuration.'.format(', '.join(faulty_keys)))
-        Toolbox.verify_required_params(ProxySetup.PARAMS, proxy_configuration)
+        ExtensionsToolbox.verify_required_params(ProxySetup.PARAMS, proxy_configuration)
         vpools = VPoolList.get_vpools()
         service_manager = ServiceFactory.get_manager()
         with open('/root/old_proxies', 'w') as backup_file:

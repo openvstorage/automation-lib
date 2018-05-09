@@ -104,7 +104,7 @@ class SdkOptionMapping(object):
         "mac": {
             "option": "mac",
             "values": None,
-            "default": "random",
+            "default": "RANDOM",
             "type": str
         },
     }

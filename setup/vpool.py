@@ -13,17 +13,19 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ovs.lib.generic import GenericController
-from ovs.lib.helpers.toolbox import Toolbox
+
 from ovs.extensions.generic.logger import Logger
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
+from ovs.lib.generic import GenericController
 from ..helpers.backend import BackendHelper
-from ..helpers.storagedriver import StoragedriverHelper
+from ..helpers.ci_constants import CIConstants
 from ..helpers.storagerouter import StoragerouterHelper
+from ..helpers.storagedriver import StoragedriverHelper
 from ..helpers.vpool import VPoolHelper
 from ..validate.decorators import required_roles, check_vpool
 
 
-class VPoolSetup(object):
+class VPoolSetup(CIConstants):
 
     LOGGER = Logger('setup-ci_vpool_setup')
     ADD_VPOOL_TIMEOUT = 500
@@ -36,10 +38,10 @@ class VPoolSetup(object):
     def __init__(self):
         pass
 
-    @staticmethod
+    @classmethod
     @check_vpool
     @required_roles(REQUIRED_VPOOL_ROLES, 'LOCAL')
-    def add_vpool(vpool_name, vpool_details, api, storagerouter_ip, proxy_amount=2, timeout=ADD_VPOOL_TIMEOUT, *args, **kwargs):
+    def add_vpool(cls, vpool_name, vpool_details, storagerouter_ip, proxy_amount=2, timeout=ADD_VPOOL_TIMEOUT, *args, **kwargs):
         """
         Adds a VPool to a storagerouter
 
@@ -49,8 +51,6 @@ class VPoolSetup(object):
         :type vpool_details: dict
         :param timeout: specify a timeout
         :type timeout: int
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param storagerouter_ip: ip of the storagerouter to add the vpool too
         :type storagerouter_ip: str
         :param proxy_amount: amount of proxies for this vpool
@@ -110,13 +110,13 @@ class VPoolSetup(object):
                 error_msg = 'Wrong `block_cache->location` in vPool configuration, it should be `disk` or `backend`'
                 VPoolSetup.LOGGER.error(error_msg)
                 raise RuntimeError(error_msg)
-        
-        task_guid = api.post(
+
+        task_guid = cls.api.post(
             api='/storagerouters/{0}/add_vpool/'.format(
-                    StoragerouterHelper.get_storagerouter_guid_by_ip(storagerouter_ip)),
+                    StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid),
             data=api_data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
         if not task_result[0]:
             error_msg = 'vPool {0} has failed to create on storagerouter {1} because: {2}'.format(vpool_name, storagerouter_ip, task_result[1])
             VPoolSetup.LOGGER.error(error_msg)
@@ -127,7 +127,7 @@ class VPoolSetup(object):
         # Settings volumedriver
         storagedriver_config = vpool_details.get('storagedriver')
         if storagedriver_config is not None:
-            Toolbox.verify_required_params(VPoolSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
+            ExtensionsToolbox.verify_required_params(VPoolSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
             VPoolSetup.LOGGER.info('Updating volumedriver configuration of vPool `{0}` on storagerouter `{1}`.'.format(vpool_name, storagerouter_ip))
             vpool = VPoolHelper.get_vpool_by_name(vpool_name)
             storagedriver = [sd for sd in vpool.storagedrivers if sd.storagerouter.ip == storagerouter_ip][0]
