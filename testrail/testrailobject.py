@@ -119,7 +119,7 @@ class TestRailObject(TestRailBase, Serializable):
     # @Todo base full property/doc generation on this variable (might need a rename then though) as the current code makes a bit repetitive
     _VERIFY_PARAMS = {}
 
-    def __init__(self, id=None, client=None, load=True,*args, **kwargs):
+    def __init__(self, id=None, client=None, load=True, *args, **kwargs):
         """
         Initialize a testrail object
         :param id: Identifier of the object

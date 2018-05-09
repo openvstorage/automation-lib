@@ -25,9 +25,11 @@ class TestrailResult:
 
     PASSED = 1
     BLOCKED = 2
-    FAILED = 5
-    SKIPPED = 11
     UNTESTED = 3
+    RETEST = 4
+    FAILED = 5
+    ONGOING = 10
+    SKIPPED = 11
 
 
 class TestrailPriority(object):
