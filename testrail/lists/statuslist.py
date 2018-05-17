@@ -17,8 +17,8 @@
 """
 ProjectList module
 """
-from ci.testrail.testraillist import TestRailList
-from ci.testrail.containers.status import Status
+from ..testraillist import TestRailList
+from ..containers.status import Status
 
 
 class StatusList(TestRailList):

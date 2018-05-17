@@ -95,7 +95,7 @@ class TestRailBase(object):
         intersect_keys = set(d1_keys).intersection(set(d2_keys))
         for key in intersect_keys:
             if dict1[key] != dict2[key]:
-                if isinstance(dict1[key], dict) and isinstance(dict1[key], dict):
+                if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
                     errors.extend(cls._compare_dicts(dict1[key], dict2[key],
                                                      strict_key_checking=strict_key_checking,
                                                      should_raise=False))

@@ -17,8 +17,8 @@
 """
 ProjectList module
 """
-from ci.testrail.testraillist import TestRailList
-from ci.testrail.containers.case import Case
+from ..testraillist import TestRailList
+from ..containers.case import Case
 
 
 class CaseList(TestRailList):

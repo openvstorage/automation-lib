@@ -17,7 +17,7 @@
 """
 Project module
 """
-from ci.testrail.testrailobject import TestRailObject
+from ..testrailobject import TestRailObject
 
 
 class Test(TestRailObject):

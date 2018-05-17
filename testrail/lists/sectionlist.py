@@ -17,8 +17,8 @@
 """
 ProjectList module
 """
-from ci.testrail.testraillist import TestRailList
-from ci.testrail.containers.section import Section
+from ..testraillist import TestRailList
+from ..containers.section import Section
 
 
 class SectionList(TestRailList):

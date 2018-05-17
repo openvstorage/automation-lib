@@ -18,7 +18,7 @@
 TestRailList Module
 """
 import operator
-from ci.testrail.testrailobject import TestRailBase
+from .testrailobject import TestRailBase
 
 
 class OperatorsMeta(type):
@@ -62,7 +62,7 @@ class TestRailList(TestRailBase):
 
     def __init__(self, object_type, client, plural, load_url=None, *args, **kwargs):
         """
-        :param object_type: Object Type to load (Example: ci.testrail.containers.project)
+        :param object_type: Object Type to load (Example: ..containers.project)
         :param client: API Client
         :param plural: Plural form of the object to load (used in url generation) (Eg. project -> projects)
         :param load_url: The url to load the object from (Could differ when other ids need to be specified)

@@ -17,7 +17,7 @@
 """
 Case Module
 """
-from ci.testrail.testrailobject import TestRailObject
+from ..testrailobject import TestRailObject
 
 
 class Case(TestRailObject):
