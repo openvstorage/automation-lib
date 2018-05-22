@@ -35,6 +35,8 @@ class BackendSetup(CIConstants):
     MAX_BACKEND_TRIES = 20
     MAX_CLAIM_RETRIES = 5
 
+    TYPE_MAPPING = {'integer': int}
+
     def __init__(self):
         pass
 
@@ -177,6 +179,32 @@ class BackendSetup(CIConstants):
             BackendSetup.LOGGER.info("Update of preset `{0}` should have succeeded on backend `{1}`"
                                      .format(preset_name, albabackend_name))
             return True
+
+    @classmethod
+    def update_maintenance_config(cls, albabackend_name, *args, **kwargs):
+        """
+        Update the maintenance config of an AlbaBackend
+        :param albabackend_name: Name of the AlbaBackend
+        :type albabackend_name: str
+        """
+        alba_backend_guid = BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
+        maintenance_metadata = BackendHelper.get_maintenance_metadata()
+        maintenance_config = {}
+
+        for key, value in kwargs.iteritems():
+            if maintenance_metadata['edit_metadata'].get(key):
+                key_type = cls.TYPE_MAPPING[maintenance_metadata['edit_metadata'].get(key)]
+                if isinstance(value, key_type):
+                    maintenance_config[key] = value
+                else:
+                    raise AttributeError("Key `{0}` cannot be set. Key type is not correct: Current type `{1}` should be `{2}`".format(key, type(value), key_type))
+            else:
+                raise AttributeError("Key `{0}` cannot be set. Only following keys are allowed: `{1}`".format(key, ', '.join(maintenance_metadata['edit_metadata'].keys())))
+
+        cls.api.post(
+            api='/alba/backends/{0}/set_maintenance_config'.format(alba_backend_guid),
+            data={'maintenance_config': maintenance_config}
+        )
 
     @classmethod
     @required_backend

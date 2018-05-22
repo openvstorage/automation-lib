@@ -175,6 +175,25 @@ class BackendHelper(CIConstants):
 
         return AlbaBackendList.get_albabackends()
 
+    @classmethod
+    def get_maintenance_config(cls, albabackend_name):
+        """
+        Fetch the maintenance config of an AlbaBackend
+        :param albabackend_name: backend name
+        :type albabackend_name: str
+        :return: dict[str]
+        """
+        return cls.api.get(api='/alba/backends/{0}/get_maintenance_config'.format(BackendHelper.get_alba_backend_guid_by_name(albabackend_name)))
+
+    @classmethod
+    def get_maintenance_metadata(cls):
+        """
+        Fetch the maintenance metadata config
+        :return: dict[str]
+        """
+        return cls.api.get(api='/alba/backends/get_maintenance_metadata')
+
+
     @staticmethod
     def get_preset_by_albabackend(preset_name, albabackend_name):
         """
