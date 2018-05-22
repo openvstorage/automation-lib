@@ -13,8 +13,8 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ovs.lib.helpers.toolbox import Toolbox
 from ovs.log.log_handler import LogHandler
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
 from ..helpers.storagedriver import StoragedriverHelper
 from ..helpers.vpool import VPoolHelper
 
@@ -32,7 +32,7 @@ class StoragedriverSetup(object):
         # Settings volumedriver
         storagedriver_config = vpool_details.get('storagedriver')
         if storagedriver_config is not None:
-            Toolbox.verify_required_params(StoragedriverSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
+            ExtensionsToolbox.verify_required_params(StoragedriverSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
             StoragedriverSetup.LOGGER.info('Updating volumedriver configuration of vPool `{0}` on storagerouter `{1}`.'.format(vpool_name, storagerouter_ip))
             vpool = VPoolHelper.get_vpool_by_name(vpool_name)
             storagedriver = [sd for sd in vpool.storagedrivers if sd.storagerouter.ip == storagerouter_ip][0]

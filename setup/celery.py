@@ -15,9 +15,9 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.extensions.generic.configuration import Configuration
+from ovs.log.log_handler import LogHandler
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.services.servicefactory import ServiceFactory
-from ovs.log.log_handler import LogHandler
 from ..helpers.storagerouter import StoragerouterHelper
 
 

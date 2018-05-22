@@ -16,34 +16,32 @@
 
 from ovs.log.log_handler import LogHandler
 from ..helpers.backend import BackendHelper
+from ..helpers.ci_constants import CIConstants
 from ..helpers.domain import DomainHelper
 from ..helpers.storagerouter import StoragerouterHelper
 from ..validate.decorators import required_backend
 
 
-class DomainSetup(object):
+class DomainSetup(CIConstants):
 
     LOGGER = LogHandler.get(source="setup", name="ci_domain_setup")
 
     def __init__(self):
         pass
 
-    @staticmethod
-    def add_domain(domain_name, api):
+    @classmethod
+    def add_domain(cls, domain_name, *args, **kwargs):
         """
         Add a new (recovery) domain to the cluster
 
-        :param domain_name: name of a new domain
+        :param domain_name: name of a new domain to add
         :type domain_name: str
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :return:
         """
-
         # check if domain already exists
         if not DomainHelper.get_domain_by_name(domain_name):
             data = {"name": domain_name}
-            api.post(
+            cls.api.post(
                 api='/domains/',
                 data=data
             )
@@ -58,22 +56,18 @@ class DomainSetup(object):
         else:
             return
 
-    @staticmethod
-    def link_domains_to_storagerouter(domain_details, storagerouter_ip, api):
+    @classmethod
+    def link_domains_to_storagerouter(cls, domain_details, storagerouter_ip, *args, **kwargs):
         """
         Link a existing domain(s) and/or recovery (domains) to a storagerouter
-
         :param domain_details: domain details of a storagerouter
             example: {"domain_guids":["Gravelines"],"recovery_domain_guids":["Roubaix", "Strasbourg"]}
         :type domain_details: dict
         :param storagerouter_ip: ip address of a storage router
         :type storagerouter_ip: str
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :return:
         """
 
-        storagerouter_guid = StoragerouterHelper.get_storagerouter_guid_by_ip(storagerouter_ip)
         domain_guids = []
         recovery_domain_guids = []
         # translate domain names to domain guids
@@ -86,25 +80,27 @@ class DomainSetup(object):
 
         data = {"domain_guids": domain_guids,
                 "recovery_domain_guids": recovery_domain_guids}
-        api.post(
+
+        storagerouter_guid = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid
+        cls.api.post(
             api='/storagerouters/{0}/set_domains/'.format(storagerouter_guid),
             data=data
         )
 
-        storagerouter = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip)
+        storagerouter = StoragerouterHelper.get_storagerouter_by_guid(storagerouter_guid=storagerouter_guid)
         if len(set(domain_guids) - set(storagerouter.regular_domains)) != 0 or \
            len(set(recovery_domain_guids) - set(storagerouter.recovery_domains)) != 0:
-            error_msg = "Failed to link (recovery) domain(s) to storagerouter `{0}`".format(storagerouter_ip)
+            error_msg = "Failed to link (recovery) domain(s) to storagerouter `{0}`".format(storagerouter_guid)
             DomainSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
             DomainSetup.LOGGER.info("Successfully linked domain (recovery) domain(s) to storagerouter `{0}`"
-                                    .format(storagerouter_ip))
+                                    .format(storagerouter_guid))
             return
 
-    @staticmethod
+    @classmethod
     @required_backend
-    def link_domains_to_backend(domain_details, albabackend_name, api):
+    def link_domains_to_backend(cls, domain_details, albabackend_name, *args, **kwargs):
         """
         Link a existing domain(s) and/or recovery (domains) to a storagerouter
 
@@ -113,9 +109,6 @@ class DomainSetup(object):
         :type domain_details: dict
         :param albabackend_name: name of a existing alba backend
         :type albabackend_name: str
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
-        :return:
         """
 
         albabackend_guid = BackendHelper.get_backend_guid_by_name(albabackend_name)
@@ -126,7 +119,7 @@ class DomainSetup(object):
             domain_guids.append(DomainHelper.get_domainguid_by_name(domain_name))
 
         data = {"domain_guids": domain_guids}
-        api.post(
+        cls.api.post(
             api='/backends/{0}/set_domains/'.format(albabackend_guid),
             data=data
         )

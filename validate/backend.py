@@ -17,7 +17,6 @@
 import ast
 from ovs.log.log_handler import LogHandler
 from ..helpers.albanode import AlbaNodeHelper
-from ..helpers.asdmanager import ASDManagerClient
 from ..helpers.backend import BackendHelper
 from ..helpers.exceptions import AlbaBackendNotFoundError, PresetNotFoundError, AlbaNodeNotFoundError
 
@@ -53,7 +52,7 @@ class BackendValidation(object):
     @staticmethod
     def check_policies_on_preset(preset_name, albabackend_name, policies):
         """
-        Check if a preset is available on a backend
+        Check if given policies match with the specified backend
 
         :param preset_name: name of a preset
         :type preset_name: str
@@ -111,31 +110,33 @@ class BackendValidation(object):
         :return: dict with available disks
         :rtype: dict
         """
-
         albanode = AlbaNodeHelper.get_albanode_by_ip(ip)
-
-        if albanode is not None:
-            # compare requested disks with available disks
-            fetched_disks = ASDManagerClient(node=albanode).get_disks().values()
-            available_disks = {}
-            for disk, amount_asds in disks.iteritems():
-                try:
-                    # check if requested disk is present and available in fetched_disks
-                    next(fetched_disk for fetched_disk in fetched_disks if
-                         fetched_disk['device'].split('/')[2] == disk and fetched_disk['available'])
-
-                    # add disk to available disks
-                    available_disks[disk] = amount_asds
-                    BackendValidation.LOGGER.info("Disk `{0}` is available on node `{1}`!".format(ip, disk))
-                except StopIteration:
-                    BackendValidation.LOGGER.error("Disk `{0}` is NOT available on node `{1}`!".format(ip, disk))
-
-            BackendValidation.LOGGER.info("The following disks are available for use on `{0}`: {1}"
-                                          .format(ip, available_disks))
-
-            return available_disks
-        else:
+        if albanode is None:
             error_msg = "Alba node with ip `{0}` was not found!".format(ip)
             BackendValidation.LOGGER.error(error_msg)
             raise AlbaNodeNotFoundError(error_msg)
+        # compare requested disks with available disks
+        fetched_slots = albanode.client.get_stack().values()
+        slot_map = {}
+        for fetched_disk in fetched_slots:
+            # Ignore other slots than disks
+            if any(key not in fetched_disk for key in ("device", "available")):
+                continue
+            disk_name = fetched_disk['device'].rsplit('/', 1)[-1]
+            slot_map[disk_name] = fetched_disk
+        available_disks = {}
+        for disk, amount_asds in disks.iteritems():
 
+            # check if requested disk is present and available in fetched_disks
+            if disk not in slot_map:
+                BackendValidation.LOGGER.error("Disk `{0}` was NOT found on node `{1}`!".format(disk, ip))
+                continue
+            if slot_map[disk]['available'] is False:
+                BackendValidation.LOGGER.error("Disk `{0}` is NOT available on node `{1}`!".format(disk, ip))
+                continue
+            # add disk to available disks
+            available_disks[disk] = amount_asds
+            BackendValidation.LOGGER.info("Disk `{0}` is available on node `{1}`!".format(disk, ip))
+        BackendValidation.LOGGER.info("The following disks are available for use on `{0}`: {1}".format(ip, available_disks))
+
+        return available_disks

@@ -15,9 +15,9 @@
 # but WITHOUT ANY WARRANTY of any kind.
 import time
 from ovs.log.log_handler import LogHandler
-from ovs.extensions.services.servicefactory import ServiceFactory
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
+from ovs.extensions.services.servicefactory import ServiceFactory
 
 
 class SystemHelper(object):
