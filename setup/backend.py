@@ -35,6 +35,8 @@ class BackendSetup(CIConstants):
     MAX_BACKEND_TRIES = 20
     MAX_CLAIM_RETRIES = 5
 
+    TYPE_MAPPING = {'integer': int}
+
     def __init__(self):
         pass
 
@@ -191,11 +193,11 @@ class BackendSetup(CIConstants):
 
         for key, value in kwargs.iteritems():
             if maintenance_metadata['edit_metadata'].get(key):
-                # key_type = maintenance_metadata['edit_metadata'].get(key)
-                if isinstance(value, int):
+                key_type = cls.TYPE_MAPPING[maintenance_metadata['edit_metadata'].get(key)]
+                if isinstance(value, key_type):
                     maintenance_config[key] = value
                 else:
-                    raise AttributeError("Key `{0}` cannot be set. Key type is not correct: Current type `{1}` should be `{2}`".format(key, type(value), type(int)))
+                    raise AttributeError("Key `{0}` cannot be set. Key type is not correct: Current type `{1}` should be `{2}`".format(key, type(value), key_type))
             else:
                 raise AttributeError("Key `{0}` cannot be set. Only following keys are allowed: `{1}`".format(key, ', '.join(maintenance_metadata['edit_metadata'].keys())))
 
