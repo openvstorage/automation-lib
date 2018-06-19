@@ -32,13 +32,15 @@ class ISCSIHelper(object):
         return IscsiNodeList.get_iscsi_nodes()
 
     @staticmethod
-    def expose_vdisk(iscsi_node_guid, vdisk_guid, username=None, password=None, acls=None):
+    def expose_vdisk(iscsi_node_guid, vdisk_guid, failover_node_guids=None, username=None, password=None, acls=None):
         """
         Expose a vDisk on the specified iSCSI Node
         :param iscsi_node_guid: Guid of the iSCSI Node to expose the vDisk on
         :type iscsi_node_guid: str
         :param vdisk_guid: Guid of the vDisk to expose
         :type vdisk_guid: str
+        :param failover_node_guids: Guids of the iSCSI Node to expose the vDisk on as failover nodes
+        :type failover_node_guids: list
         :param username: User to which the Edge vDisk belongs to
         :type username: str
         :param password: Password linked to the user
@@ -48,8 +50,9 @@ class ISCSIHelper(object):
         :return: IQN details
         :rtype: str
         """
-        return IscsiNodeController.expose_vdisk(iscsi_node_guid=iscsi_node_guid,
+        return IscsiNodeController.expose_vdisk(prim_node_guid=iscsi_node_guid,
                                                 vdisk_guid=vdisk_guid,
+                                                failover_node_guids=failover_node_guids,
                                                 username=username,
                                                 password=password,
                                                 acls=acls)
