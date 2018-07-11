@@ -77,7 +77,10 @@ class ArakoonSetup(object):
                                          base_dir=cluster_basedir,
                                          plugins=plugins,
                                          locked=False,
-                                         internal=False)
+                                         internal=False,
+                                         log_sinks=LogHandler.get_sink_path('automation_lib_arakoon_server'),
+                                         crash_log_sinks=LogHandler.get_sink_path('automation_lib_arakoon_server_crash')
+                                         )
         if service_type == ServiceType.ARAKOON_CLUSTER_TYPES.ABM:
             client.run(['ln', '-s', '/usr/lib/alba/albamgr_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
         elif service_type == ServiceType.ARAKOON_CLUSTER_TYPES.NSM:
@@ -128,7 +131,9 @@ class ArakoonSetup(object):
         arakoon_installer.load()
         arakoon_installer.extend_cluster(new_ip=storagerouter_ip,
                                          base_dir=cluster_basedir,
-                                         locked=False)
+                                         locked=False,
+                                         log_sinks=LogHandler.get_sink_path('automation_lib_arakoon_server'),
+                                         crash_log_sinks=LogHandler.get_sink_path('automation_lib_arakoon_server_crash'))
         if service_type == ServiceType.ARAKOON_CLUSTER_TYPES.ABM:
             client.run(['ln', '-s', '/usr/lib/alba/albamgr_plugin.cmxs', '{0}/arakoon/{1}/db'.format(cluster_basedir, cluster_name)])
         elif service_type == ServiceType.ARAKOON_CLUSTER_TYPES.NSM:
@@ -194,6 +199,5 @@ class ArakoonSetup(object):
                                                     clustered_nodes=external_arakoon_mapping[arakoon_name]['all'])
             return external_arakoon_mapping
         else:
-            ArakoonSetup.LOGGER.info("Skipping external arakoon creation because backend `{0}` already exists"
-                                 .format(backend['name']))
+            ArakoonSetup.LOGGER.info("Skipping external arakoon creation because backend `{0}` already exists".format(backend['name']))
             return

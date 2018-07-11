@@ -15,6 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.log.log_handler import LogHandler
 from ..helpers.disk import DiskHelper
+from ..helpers.storagerouter import StoragerouterHelper
 
 
 class RoleValidation(object):
@@ -43,7 +44,8 @@ class RoleValidation(object):
         # fetch availabe roles
         if location == "LOCAL":
             # LOCAL
-            available_roles = DiskHelper.get_roles_from_disks(storagerouter_ip=storagerouter_ip)
+            storagerouter_guid = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid
+            available_roles = DiskHelper.get_roles_from_disks(storagerouter_guid=storagerouter_guid)
         else:
             # GLOBAL
             available_roles = DiskHelper.get_roles_from_disks()

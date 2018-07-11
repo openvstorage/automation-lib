@@ -42,7 +42,8 @@ class CIConstants(object):
     def api(cls):
         return OVSClient(cls.SETUP_CFG['ci']['grid_ip'],
                          cls.SETUP_CFG['ci']['user']['api']['username'],
-                         cls.SETUP_CFG['ci']['user']['api']['password'])
+                         cls.SETUP_CFG['ci']['user']['api']['password'],
+                         )
 
     @classmethod
     def get_vpool_names(cls):

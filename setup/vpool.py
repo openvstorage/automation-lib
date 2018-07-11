@@ -13,28 +13,35 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-from ovs.extensions.generic.configuration import Configuration
-from ovs.lib.generic import GenericController
+
 from ovs.log.log_handler import LogHandler
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
+from ovs.lib.generic import GenericController
 from ..helpers.backend import BackendHelper
+from ..helpers.ci_constants import CIConstants
 from ..helpers.storagerouter import StoragerouterHelper
+from ..helpers.storagedriver import StoragedriverHelper
 from ..helpers.vpool import VPoolHelper
 from ..validate.decorators import required_roles, check_vpool
 
 
-class VPoolSetup(object):
+class VPoolSetup(CIConstants):
+
     LOGGER = LogHandler.get(source='setup', name='ci_vpool_setup')
     ADD_VPOOL_TIMEOUT = 500
     REQUIRED_VPOOL_ROLES = ['DB', 'WRITE', 'DTL']
 
+    # These will be all possible settings for the StorageDriver. Messing them up is their own responsibility (they should not bypass the API by default!!)
+    STORAGEDRIVER_PARAMS = {"volume_manager": (dict, None, False),
+                            "backend_connection_manager": (dict, None, False)}
+
     def __init__(self):
         pass
 
-    @staticmethod
+    @classmethod
     @check_vpool
     @required_roles(REQUIRED_VPOOL_ROLES, 'LOCAL')
-    def add_vpool(vpool_name, vpool_details, api, storagerouter_ip, proxy_amount=2, timeout=ADD_VPOOL_TIMEOUT, *args,
-                  **kwargs):
+    def add_vpool(cls, vpool_name, vpool_details, storagerouter_ip, proxy_amount=2, timeout=ADD_VPOOL_TIMEOUT, *args, **kwargs):
         """
         Adds a VPool to a storagerouter
 
@@ -44,8 +51,6 @@ class VPoolSetup(object):
         :type vpool_details: dict
         :param timeout: specify a timeout
         :type timeout: int
-        :param api: specify a valid api connection to the setup
-        :type api: helpers.api.OVSClient
         :param storagerouter_ip: ip of the storagerouter to add the vpool too
         :type storagerouter_ip: str
         :param proxy_amount: amount of proxies for this vpool
@@ -57,9 +62,8 @@ class VPoolSetup(object):
         # Build ADD_VPOOL parameters
         call_parameters = {
             'vpool_name': vpool_name,
-            'backend_info': {
-                'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['backend_name']).guid,
-                'preset': vpool_details['preset']},
+            'backend_info': {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['backend_name']).guid,
+                             'preset': vpool_details['preset']},
             'connection_info': {'host': '', 'port': '', 'client_id': '', 'client_secret': ''},
             'storage_ip': vpool_details['storage_ip'],
             'storagerouter_ip': storagerouter_ip,
@@ -75,10 +79,13 @@ class VPoolSetup(object):
         }
         api_data = {'call_parameters': call_parameters}
 
+        # Setting for mds_safety
+        if vpool_details.get('mds_safety') is not None:
+            call_parameters['mds_config_params'] = {'mds_safety': vpool_details['mds_safety']}
+
         # Setting possible alba accelerated alba
         if vpool_details['fragment_cache']['location'] == 'backend':
-            call_parameters['backend_info_aa'] = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(
-                vpool_details['fragment_cache']['backend']['name']).guid,
+            call_parameters['backend_info_aa'] = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['fragment_cache']['backend']['name']).guid,
                                                   'preset': vpool_details['fragment_cache']['backend']['preset']}
             call_parameters['connection_info_aa'] = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
         elif vpool_details['fragment_cache']['location'] == 'disk':
@@ -93,8 +100,7 @@ class VPoolSetup(object):
             call_parameters['block_cache_on_read'] = vpool_details['block_cache']['strategy']['cache_on_read']
             call_parameters['block_cache_on_write'] = vpool_details['block_cache']['strategy']['cache_on_write']
             if vpool_details['block_cache']['location'] == 'backend':
-                call_parameters['backend_info_bc'] = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(
-                    vpool_details['block_cache']['backend']['name']).guid,
+                call_parameters['backend_info_bc'] = {'alba_backend_guid': BackendHelper.get_albabackend_by_name(vpool_details['block_cache']['backend']['name']).guid,
                                                       'preset': vpool_details['block_cache']['backend']['preset']}
                 call_parameters['connection_info_bc'] = {'host': '', 'port': '', 'client_id': '', 'client_secret': ''}
             elif vpool_details['block_cache']['location'] == 'disk':  # Ignore disk
@@ -105,37 +111,33 @@ class VPoolSetup(object):
                 VPoolSetup.LOGGER.error(error_msg)
                 raise RuntimeError(error_msg)
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/storagerouters/{0}/add_vpool/'.format(
-                StoragerouterHelper.get_storagerouter_guid_by_ip(storagerouter_ip)),
+                    StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid),
             data=api_data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
         if not task_result[0]:
-            error_msg = 'vPool {0} has failed to create on storagerouter {1} because: {2}'.format(vpool_name,
-                                                                                                  storagerouter_ip,
-                                                                                                  task_result[1])
+            error_msg = 'vPool {0} has failed to create on storagerouter {1} because: {2}'.format(vpool_name, storagerouter_ip, task_result[1])
             VPoolSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            VPoolSetup.LOGGER.info(
-                'Creation of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name,
-                                                                                              storagerouter_ip))
+            VPoolSetup.LOGGER.info('Creation of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name, storagerouter_ip))
 
-            if vpool_details.get('mds_safety') is not None:
-                vpool = VPoolHelper.get_vpool_by_name(vpool_name)
+        # Settings volumedriver
+        storagedriver_config = vpool_details.get('storagedriver')
+        if storagedriver_config is not None:
+            ExtensionsToolbox.verify_required_params(VPoolSetup.STORAGEDRIVER_PARAMS, storagedriver_config)
+            VPoolSetup.LOGGER.info('Updating volumedriver configuration of vPool `{0}` on storagerouter `{1}`.'.format(vpool_name, storagerouter_ip))
+            vpool = VPoolHelper.get_vpool_by_name(vpool_name)
+            storagedriver = [sd for sd in vpool.storagedrivers if sd.storagerouter.ip == storagerouter_ip][0]
+            if not storagedriver:
+                error_msg = 'Unable to find the storagedriver of vPool {0} on storagerouter {1}'.format(vpool_name, storagerouter_ip)
+                raise RuntimeError(error_msg)
+            StoragedriverHelper.change_config(storagedriver, storagedriver_config)
+            VPoolSetup.LOGGER.info('Updating volumedriver config of vPool `{0}` should have succeeded on storagerouter `{1}`'.format(vpool_name, storagerouter_ip))
 
-                if vpool:
-                    mds_config_path = '/ovs/vpools/{0}/mds_config'.format(vpool.guid)
-                    mds_config = Configuration.get(mds_config_path)
-                    mds_config['mds_safety'] = vpool_details.get('mds_safety')
-                    Configuration.set(mds_config_path, mds_config)
-                else:
-                    error_msg = 'Unable to change the mds safety of vPool {0}.'.format(vpool_name)
-                    VPoolSetup.LOGGER.error(error_msg)
-                    raise RuntimeError(error_msg)
-
-            return storagerouter_ip, '/mnt/{0}'.format(vpool_name)
+        return storagerouter_ip, '/mnt/{0}'.format(vpool_name)
 
     @staticmethod
     def execute_scrubbing():

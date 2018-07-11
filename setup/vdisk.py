@@ -290,11 +290,11 @@ class VDiskSetup(CIConstants):
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Creating vTemplate `{0}` has failed with error {1}".format(vdisk_name, task_result[1])
+            error_msg = "Creating `{0}` from vTemplate `{1}` has failed with error {2}".format(official_new_vdisk_name, vdisk_name, task_result[1])
             VDiskSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            VDiskSetup.LOGGER.info("Creating vTemplate `{0}` should have succeeded".format(vdisk_name))
+            VDiskSetup.LOGGER.info("Creating `{0}` from vTemplate `{1}` should have succeeded".format(official_new_vdisk_name, vdisk_name))
             return task_result[1]
 
     @classmethod

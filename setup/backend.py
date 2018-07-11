@@ -18,8 +18,8 @@ from ovs.log.log_handler import LogHandler
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
 from ..helpers.ci_constants import CIConstants
-from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_preset, \
-    check_linked_backend, filter_osds
+from ..helpers.exceptions import PresetNotFoundError
+from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_linked_backend, filter_osds
 
 
 class BackendSetup(CIConstants):
@@ -95,7 +95,6 @@ class BackendSetup(CIConstants):
         return False
 
     @classmethod
-    @check_preset
     @required_backend
     def add_preset(cls, albabackend_name, preset_details, timeout=ADD_PRESET_TIMEOUT, *args, **kwargs):
         """
@@ -120,6 +119,15 @@ class BackendSetup(CIConstants):
         :return: success or not
         :rtype: bool
         """
+
+        # CHECK PRESET
+        try:
+            BackendHelper.get_preset_by_albabackend(preset_details['name'], albabackend_name)
+            BackendSetup.LOGGER.info("Preset `{0}` already exists.".format(preset_details['name']))
+            return True
+        except PresetNotFoundError:
+            pass
+
         # BUILD_PRESET
         preset = {'name': preset_details['name'],
                   'policies': preset_details['policies'],
