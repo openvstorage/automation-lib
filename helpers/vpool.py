@@ -14,10 +14,9 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
 from ovs.dal.lists.vpoollist import VPoolList
+from ovs.log.log_handler import LogHandler
 from ..helpers.exceptions import VPoolNotFoundError
-
 
 
 class VPoolHelper(object):

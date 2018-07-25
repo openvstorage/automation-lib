@@ -14,13 +14,12 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.log.log_handler import LogHandler
 from ovs.extensions.db.arakooninstaller import ArakoonInstaller
+from ovs.log.log_handler import LogHandler
 from ..validate.decorators import required_arakoon_cluster
 
 
 class ArakoonRemover(object):
-
     LOGGER = LogHandler.get(source="remove", name="ci_arakoon_remover")
 
     def __init__(self):
