@@ -47,8 +47,8 @@ class ISCSIHelper(object):
         :type password: str
         :param acls: ACL information to enforce limited access to the vDisk
         :type acls: list[str]
-        :return: IQN details
-        :rtype: str
+        :return: IQN details {node_guid: iqn}
+        :rtype: dict
         """
         return IscsiNodeController.expose_vdisk(prim_node_guid=iscsi_node_guid,
                                                 vdisk_guid=vdisk_guid,
