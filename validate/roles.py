@@ -84,4 +84,6 @@ class RoleValidation(object):
         :return: if available on disk
         :rtype: bool
         """
-        return len(set(roles).difference(set(DiskHelper.get_roles_from_disk(storagerouter_ip, disk_name)))) == 0
+
+        storagerouter_guid = StoragerouterHelper.get_storagerouter_by_ip(storagerouter_ip).guid
+        return len(set(roles).difference(set(DiskHelper.get_roles_from_disk(storagerouter_guid, disk_name)))) == 0

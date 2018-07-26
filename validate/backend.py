@@ -116,7 +116,7 @@ class BackendValidation(object):
             BackendValidation.LOGGER.error(error_msg)
             raise AlbaNodeNotFoundError(error_msg)
         # compare requested disks with available disks
-        fetched_slots = albanode.client.get_stack().values()
+        fetched_slots = albanode.client.get_disks().values()
         slot_map = {}
         for fetched_disk in fetched_slots:
             # Ignore other slots than disks
