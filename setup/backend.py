@@ -208,9 +208,10 @@ class BackendSetup(CIConstants):
         BackendSetup._discover_and_register_nodes(cls.api)
         # target is a node
         node_mapping = AlbaNodeHelper._map_alba_nodes(cls.api)
+        alba_backend_guid = BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
 
         local_stack = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=cls.api)
-        backend_info = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=api)
+        backend_info = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=cls.api)
         local_stack = backend_info['local_stack']
         node_slot_information = {}
         for disk, amount_of_osds in disks.iteritems():
@@ -230,7 +231,7 @@ class BackendSetup(CIConstants):
                     node_slot_information[alba_node_guid] = slot_information
         for alba_node_guid, slot_information in node_slot_information.iteritems():
             BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(slot_information, alba_node_guid))
-            BackendSetup._fill_slots(alba_node_guid=alba_node_guid, slot_information=slot_information, api=api)
+            BackendSetup._fill_slots(alba_node_guid=alba_node_guid, slot_information=slot_information, api=cls.api)
 
         # Local stack should sync with the new disks
         BackendSetup.LOGGER.info('Sleeping for {0} seconds to let local stack sync.'.format(BackendSetup.LOCAL_STACK_SYNC))
@@ -269,7 +270,7 @@ class BackendSetup(CIConstants):
                     node_osds_to_claim[alba_node_guid] = osds_to_claim
         for alba_node_guid, osds_to_claim in node_osds_to_claim.iteritems():
             BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(osds_to_claim, alba_node_guid))
-            BackendSetup._claim_osds(alba_backend_name=albabackend_name, alba_node_guid=alba_node_guid, osds=osds_to_claim, api=cls,api)
+            BackendSetup._claim_osds(alba_backend_name=albabackend_name, alba_node_guid=alba_node_guid, osds=osds_to_claim, api=cls.api)
 
     @classmethod
     def _discover_and_register_nodes(cls, *args, **kwargs):
