@@ -17,7 +17,7 @@
 from ovs.dal.hybrids.service import Service
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.services.servicefactory import ServiceFactory
-from ovs.log.log_handler import LogHandler
+from ovs.extensions.generic.logger import Logger
 from ..helpers.ci_constants import CIConstants
 
 
@@ -26,7 +26,7 @@ class ServiceHelper(CIConstants):
     ServiceHelper class
     """
 
-    LOGGER = LogHandler.get(source="setup", name="ci_service_setup")
+    LOGGER = Logger("setup-ci_service_setup")
     SERVICE_MANAGER = ServiceFactory.get_manager()
 
     @staticmethod
