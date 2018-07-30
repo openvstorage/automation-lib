@@ -52,7 +52,7 @@ class BackendValidation(object):
     @staticmethod
     def check_policies_on_preset(preset_name, albabackend_name, policies):
         """
-        Check if a preset is available on a backend
+        Check if given policies match with the specified backend
 
         :param preset_name: name of a preset
         :type preset_name: str

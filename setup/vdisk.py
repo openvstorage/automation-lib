@@ -15,13 +15,14 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.extensions.generic.logger import Logger
+from ..helpers.ci_constants import CIConstants
 from ..helpers.storagerouter import StoragerouterHelper
 from ..helpers.vdisk import VDiskHelper
 from ..helpers.vpool import VPoolHelper
 from ..validate.decorators import required_vdisk, required_snapshot, required_vtemplate
 
 
-class VDiskSetup(object):
+class VDiskSetup(CIConstants):
 
     LOGGER = Logger("setup-ci_vdisk_setup")
     CREATE_SNAPSHOT_TIMEOUT = 60
@@ -34,9 +35,9 @@ class VDiskSetup(object):
     def __init__(self):
         pass
 
-    @staticmethod
-    def create_snapshot(snapshot_name, vdisk_name, vpool_name, api, consistent=True, sticky=True,
-                        timeout=CREATE_SNAPSHOT_TIMEOUT):
+    @classmethod
+    def create_snapshot(cls, snapshot_name, vdisk_name, vpool_name, consistent=True, sticky=True,
+                        timeout=CREATE_SNAPSHOT_TIMEOUT, *args, **kwargs):
         """
         Create a new snapshot for a vdisk
 
@@ -49,8 +50,6 @@ class VDiskSetup(object):
         :type consistent: bool
         :param sticky: let this snapshot stick forever?
         :type sticky: bool
-        :param api: specify a valid api connection to the setup
-        :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
         :type timeout: int
         :param vpool_name: name of a existing vpool
@@ -70,7 +69,7 @@ class VDiskSetup(object):
             api='/vdisks/{0}/create_snapshot/'.format(vdisk_guid),
             data=data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Creating snapshot `{0}` for vdisk `{1}` on vPool `{2}` has failed"\
@@ -82,8 +81,8 @@ class VDiskSetup(object):
                                    .format(snapshot_name, vdisk_name, vpool_name))
             return task_result[1]
 
-    @staticmethod
-    def create_vdisk(vdisk_name, vpool_name, size, storagerouter_ip, api, timeout=CREATE_VDISK_TIMEOUT):
+    @classmethod
+    def create_vdisk(cls, vdisk_name, vpool_name, size, storagerouter_ip, timeout=CREATE_VDISK_TIMEOUT, *args, **kwargs):
         """
         Create a new vDisk on a certain vPool/storagerouter
         :param vdisk_name: location of a vdisk on a vpool (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
@@ -94,8 +93,6 @@ class VDiskSetup(object):
         :type size: int
         :param storagerouter_ip: ip address of a existing storagerouter
         :type storagerouter_ip: str
-        :param api: specify a valid api connection to the setup
-        :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
         :type timeout: int
         :param vpool_name: name of a existing vpool
@@ -117,11 +114,11 @@ class VDiskSetup(object):
                 "vpool_guid": vpool_guid,
                 "storagerouter_guid": storagerouter_guid}
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/',
             data=data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Creating vdisk `{0}` on vPool `{1}` on storagerouter `{2}` has failed with error {3}"\
@@ -133,24 +130,23 @@ class VDiskSetup(object):
                                    .format(vdisk_name, vpool_name, storagerouter_ip))
             return task_result[1]
 
-    @staticmethod
+    @classmethod
     @required_vdisk
-    def move_vdisk(vdisk_guid, target_storagerouter_guid, api, timeout=60):
+    def move_vdisk(cls, vdisk_guid, target_storagerouter_guid, timeout=60, *args, **kwargs):
         """
         Moves a vdisk
         :param vdisk_guid: guid of the vdisk
         :param target_storagerouter_guid: guid of the storuagerouter to move to
-        :param api: instance of ovs client
         :param timeout: timeout in seconds
         :return:
         """
         data = {"target_storagerouter_guid": target_storagerouter_guid}
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/move/'.format(vdisk_guid),
             data=data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Moving vdisk {0} to {1} has failed with {2}.".format(
@@ -162,11 +158,11 @@ class VDiskSetup(object):
                 "Vdisk {0} should have been moved to {1}.".format(vdisk_guid, target_storagerouter_guid))
             return task_result[1]
 
-    @staticmethod
+    @classmethod
     @required_vdisk
     @required_snapshot
-    def create_clone(vdisk_name, vpool_name, new_vdisk_name, storagerouter_ip, api, snapshot_id=None,
-                     timeout=CREATE_CLONE_TIMEOUT):
+    def create_clone(cls, vdisk_name, vpool_name, new_vdisk_name, storagerouter_ip, snapshot_id=None,
+                     timeout=CREATE_CLONE_TIMEOUT, *args, **kwargs):
         """
         Create a new vDisk on a certain vPool/storagerouter
         :param vdisk_name: location of a vdisk on a vpool (e.g. /mnt/vpool/test.raw = test.raw, /mnt/vpool/volumes/test.raw = volumes/test.raw )
@@ -179,8 +175,6 @@ class VDiskSetup(object):
         :type storagerouter_ip: str
         :param snapshot_id: GUID of a existing snapshot (DEFAULT=None -> will create new snapshot)
         :type snapshot_id: str
-        :param api: specify a valid api connection to the setup
-        :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
         :type timeout: int
         :param vpool_name: name of a existing vpool
@@ -210,11 +204,11 @@ class VDiskSetup(object):
                     "storagerouter_guid": storagerouter_guid,
                     "snapshot_id": snapshot_id}
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/clone'.format(vdisk.guid),
             data=data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Creating clone `{0}` with snapshot_id `{4}` on vPool `{1}` on storagerouter `{2}` " \
@@ -228,9 +222,9 @@ class VDiskSetup(object):
                                                                   snapshot_id))
             return task_result[1]
 
-    @staticmethod
+    @classmethod
     @required_vdisk
-    def set_vdisk_as_template(vdisk_name, vpool_name, api, timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT):
+    def set_vdisk_as_template(cls, vdisk_name, vpool_name, timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT, *args, **kwargs):
         """
         Create a new vDisk on a certain vPool/storagerouter
         Set a existing vDisk as vTemplate
@@ -240,17 +234,15 @@ class VDiskSetup(object):
         :type vdisk_name: str
         :param vpool_name: name of a existing vpool
         :type vpool_name: str
-        :param api: specify a valid api connection to the setup
-        :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
         """
         # fetch the requirements
         vdisk = VDiskHelper.get_vdisk_by_name(vdisk_name, vpool_name)
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/set_as_template'.format(vdisk.guid)
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Creating vTemplate `{0}` has failed with error {1}".format(vdisk_name, task_result[1])
@@ -260,10 +252,10 @@ class VDiskSetup(object):
             VDiskSetup.LOGGER.info("Creating vTemplate `{0}` should have succeeded".format(vdisk_name))
             return task_result[1]
 
-    @staticmethod
+    @classmethod
     @required_vtemplate
-    def create_from_template(vdisk_name, vpool_name, new_vdisk_name, storagerouter_ip, api,
-                             timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT):
+    def create_from_template(cls, vdisk_name, vpool_name, new_vdisk_name, storagerouter_ip,
+                             timeout=SET_VDISK_AS_TEMPLATE_TIMEOUT, *args, **kwargs):
         """
         Create a new vDisk on a certain vPool/storagerouter
         Set a existing vDisk as vTemplate
@@ -275,8 +267,6 @@ class VDiskSetup(object):
         :type new_vdisk_name: str
         :param storagerouter_ip: ip address of a existing storagerouter where the clone will be deployed
         :type storagerouter_ip: str
-        :param api: specify a valid api connection to the setup
-        :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
         :return: dict with info about the new vdisk {'vdisk_guid': new_vdisk.guid, 'name': new_vdisk.name, 'backingdevice': devicename}
         :rtype: dict
@@ -294,23 +284,23 @@ class VDiskSetup(object):
         data = {"name": official_new_vdisk_name,
                 "storagerouter_guid": storagerouter_guid}
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/create_from_template'.format(vdisk.guid),
             data=data
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Creating vTemplate `{0}` has failed with error {1}".format(vdisk_name, task_result[1])
+            error_msg = "Creating `{0}` from vTemplate `{1}` has failed with error {2}".format(official_new_vdisk_name, vdisk_name, task_result[1])
             VDiskSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            VDiskSetup.LOGGER.info("Creating vTemplate `{0}` should have succeeded".format(vdisk_name))
+            VDiskSetup.LOGGER.info("Creating `{0}` from vTemplate `{1}` should have succeeded".format(official_new_vdisk_name, vdisk_name))
             return task_result[1]
 
-    @staticmethod
+    @classmethod
     @required_vdisk
-    def rollback_to_snapshot(vdisk_name, vpool_name, snapshot_id, api, timeout=ROLLBACK_VDISK_TIMEOUT):
+    def rollback_to_snapshot(cls, vdisk_name, vpool_name, snapshot_id, timeout=ROLLBACK_VDISK_TIMEOUT, *args, **kwargs):
         """
         Rollback a vdisk to a certain snapshot
 
@@ -321,8 +311,6 @@ class VDiskSetup(object):
         :type vpool_name: str
         :param snapshot_id: guid of a snapshot for the chosen vdisk
         :type snapshot_id: str
-        :param api: specify a valid api connection to the setup
-        :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
         """
 
@@ -331,11 +319,11 @@ class VDiskSetup(object):
         snapshot = VDiskHelper.get_snapshot_by_guid(snapshot_guid=snapshot_id, vdisk_name=vdisk_name,
                                                     vpool_name=vpool_name)
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/rollback'.format(vdisk_guid),
             data={"timestamp": snapshot['timestamp']}
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Rollback vDisk `{0}` has failed with error {1}".format(vdisk_name, task_result[1])
@@ -345,9 +333,9 @@ class VDiskSetup(object):
             VDiskSetup.LOGGER.info("Rollback vDisk `{0}` should have succeeded".format(vdisk_name))
             return task_result[1]
 
-    @staticmethod
+    @classmethod
     @required_vdisk
-    def set_config_params(vdisk_name, vpool_name, config, api, timeout=SET_CONFIG_VDISK_TIMEOUT):
+    def set_config_params(cls, vdisk_name, vpool_name, config, timeout=SET_CONFIG_VDISK_TIMEOUT, *args, **kwargs):
         """
         Rollback a vdisk to a certain snapshot
 
@@ -366,8 +354,6 @@ class VDiskSetup(object):
            ]
         }
         :type config: dict
-        :param api: specify a valid api connection to the setup
-        :type api: ci.helpers.api.OVSClient
         :param timeout: time to wait for the task to complete
         :type timeout: int
         :rtype: dict
@@ -377,11 +363,11 @@ class VDiskSetup(object):
         # fetch the requirements
         vdisk_guid = VDiskHelper.get_vdisk_by_name(vdisk_name=vdisk_name, vpool_name=vpool_name).guid
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/set_config_params'.format(vdisk_guid),
             data={"new_config_params": config}
         )
-        task_result = api.wait_for_task(task_id=task_guid, timeout=timeout)
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
             error_msg = "Setting config vDisk `{0}` has failed with error {1}".format(vdisk_name, task_result[1])

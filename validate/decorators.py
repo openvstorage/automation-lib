@@ -317,24 +317,3 @@ def check_backend(func):
         else:
             raise AttributeError("Missing parameter: backend_name")
     return validate
-
-
-def check_preset(func):
-    """
-    Check if a preset is already present on a backend
-
-    :param func: function
-    :type func: Function
-    """
-
-    def validate(*args, **kwargs):
-        if kwargs['albabackend_name'] and kwargs['preset_details']:
-            if not BackendValidation.check_preset_on_backend(preset_name=kwargs['preset_details']['name'],
-                                                             albabackend_name=kwargs['albabackend_name']):
-                # if the preset is not yet created, create it
-                return func(*args, **kwargs)
-            else:
-                return
-        else:
-            raise AttributeError("Missing parameter: backend_name")
-    return validate
