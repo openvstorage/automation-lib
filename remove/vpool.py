@@ -15,6 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.extensions.generic.logger import Logger
+
 from ..helpers.ci_constants import CIConstants
 from ..helpers.storagerouter import StoragerouterHelper
 from ..helpers.vpool import VPoolHelper

@@ -14,14 +14,15 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import json
+
+from ovs.dal.hybrids.service import Service
 from ovs.dal.lists.vpoollist import VPoolList
 from ovs.extensions.generic.configuration import Configuration
 from ovs.extensions.generic.logger import Logger
-from ovs_extensions.generic.toolbox import ExtensionsToolbox
+from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.services.servicefactory import ServiceFactory
 from ovs.lib.helpers.toolbox import Toolbox
-from ovs.dal.hybrids.service import Service
-from ovs.extensions.generic.sshclient import SSHClient
+from ovs_extensions.generic.toolbox import ExtensionsToolbox
 
 
 class ProxySetup(object):

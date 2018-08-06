@@ -19,10 +19,10 @@ API client module.
 - APIClient: An API client. The client has been changed to work with testrail auth keys
 - APIError: Exception thrown by the API client
 """
+import base64
+import json
 import re
 import sys
-import json
-import base64
 import urllib2
 
 

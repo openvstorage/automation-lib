@@ -15,6 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.extensions.generic.logger import Logger
+
 from ..validate.decorators import required_vdisk
 
 

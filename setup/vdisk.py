@@ -15,6 +15,7 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.extensions.generic.logger import Logger
+
 from ..helpers.ci_constants import CIConstants
 from ..helpers.storagerouter import StoragerouterHelper
 from ..helpers.vdisk import VDiskHelper
@@ -65,7 +66,7 @@ class VDiskSetup(CIConstants):
             'sticky': sticky
         }
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/create_snapshot/'.format(vdisk_guid),
             data=data
         )

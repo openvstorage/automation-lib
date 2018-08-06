@@ -17,8 +17,8 @@
 """
 ProjectList module
 """
-from ..testraillist import TestRailList
 from ..containers.plan import Plan
+from ..testraillist import TestRailList
 
 
 class PlanList(TestRailList):

@@ -19,9 +19,10 @@ from ovs.extensions.db.arakooninstaller import ArakoonInstaller
 from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.lib.alba import AlbaController
+
 from ..helpers.backend import BackendHelper
-from ..validate.decorators import required_backend, required_arakoon_cluster
 from ..validate.backend import BackendValidation
+from ..validate.decorators import required_backend, required_arakoon_cluster
 
 
 class ArakoonSetup(object):

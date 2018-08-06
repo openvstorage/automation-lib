@@ -16,18 +16,20 @@
 This module contains all code for using the KVM libvirt api
 """
 
-import subprocess
+import glob
 import os
 import re
-import glob
+import subprocess
 import uuid
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
+
 import libvirt
 from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
 from ovs.lib.helpers.toolbox import Toolbox
-from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
+
 # Relative
 from option_mapping import SdkOptionMapping
 

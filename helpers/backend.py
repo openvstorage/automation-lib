@@ -13,11 +13,12 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
+from ovs.dal.hybrids.albabackend import AlbaBackend
 from ovs.dal.lists.albabackendlist import AlbaBackendList
 from ovs.dal.lists.backendlist import BackendList
 from ovs.dal.lists.backendtypelist import BackendTypeList
-from ovs.dal.hybrids.albabackend import AlbaBackend
 from ovs.extensions.generic.logger import Logger
+
 from ..helpers.exceptions import PresetNotFoundError, AlbaBackendNotFoundError
 
 

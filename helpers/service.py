@@ -15,9 +15,10 @@
 # but WITHOUT ANY WARRANTY of any kind.
 
 from ovs.dal.hybrids.service import Service
+from ovs.extensions.generic.logger import Logger
 from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.services.servicefactory import ServiceFactory
-from ovs.extensions.generic.logger import Logger
+
 from ..helpers.ci_constants import CIConstants
 
 

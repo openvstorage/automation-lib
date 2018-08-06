@@ -14,12 +14,15 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import time
+
 from ovs.extensions.generic.logger import Logger
+
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
 from ..helpers.ci_constants import CIConstants
 from ..helpers.exceptions import PresetNotFoundError
-from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_linked_backend, filter_osds
+from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, \
+    check_linked_backend, filter_osds
 
 
 class BackendSetup(CIConstants):
@@ -337,7 +340,7 @@ class BackendSetup(CIConstants):
         """
         data = {'slot_information': slot_information}
 
-        task_guid = cls,api.post(
+        task_guid = cls.api.post(
             api='/alba/nodes/{0}/fill_slots/'.format(alba_node_guid),
             data=data
         )
