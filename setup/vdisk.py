@@ -65,7 +65,7 @@ class VDiskSetup(CIConstants):
             'sticky': sticky
         }
 
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/create_snapshot/'.format(vdisk_guid),
             data=data
         )

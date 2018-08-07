@@ -68,7 +68,7 @@ class VDiskRemover(CIConstants):
         vdisk_guid = VDiskHelper.get_vdisk_by_name(vdisk_name, vpool_name).guid
 
         data = {"snapshot_id": snapshot_guid}
-        task_guid = api.post(
+        task_guid = cls.api.post(
             api='/vdisks/{0}/remove_snapshot/'.format(vdisk_guid),
             data=data
         )
