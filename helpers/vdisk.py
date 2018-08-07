@@ -18,7 +18,6 @@ from ovs.dal.hybrids.vdisk import VDisk
 from ovs.dal.lists.vdisklist import VDiskList
 from ovs.dal.lists.vpoollist import VPoolList
 from ovs.extensions.generic.logger import Logger
-
 from ..helpers.ci_constants import CIConstants
 from ..helpers.exceptions import VPoolNotFoundError, VDiskNotFoundError
 

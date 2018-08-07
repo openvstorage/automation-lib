@@ -14,7 +14,6 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 import json
-
 from ovs.dal.hybrids.storagedriver import StorageDriver
 from ovs.dal.lists.storagedriverlist import StorageDriverList
 from ovs.extensions.generic.configuration import Configuration

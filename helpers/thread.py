@@ -13,10 +13,9 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
-import threading
 import time
+import threading
 from threading import Lock
-
 from ovs.extensions.generic.logger import Logger
 
 

@@ -17,19 +17,17 @@
 """
 Module for the OVS API client
 """
-import hashlib
 import json
-import logging
 import time
 import urllib
-
+import hashlib
+import logging
 import requests
-from ovs.extensions.generic.logger import Logger
 from requests.packages.urllib3 import disable_warnings
 from requests.packages.urllib3.exceptions import InsecurePlatformWarning
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.packages.urllib3.exceptions import SNIMissingWarning
-
+from ovs.extensions.generic.logger import Logger
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 

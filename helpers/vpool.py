@@ -16,7 +16,6 @@
 
 from ovs.dal.lists.vpoollist import VPoolList
 from ovs.extensions.generic.logger import Logger
-
 from ..helpers.exceptions import VPoolNotFoundError
 
 

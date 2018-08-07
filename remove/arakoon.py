@@ -14,9 +14,8 @@
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
 
-from ovs.extensions.db.arakooninstaller import ArakoonInstaller
 from ovs.extensions.generic.logger import Logger
-
+from ovs.extensions.db.arakooninstaller import ArakoonInstaller
 from ..validate.decorators import required_arakoon_cluster
 
 

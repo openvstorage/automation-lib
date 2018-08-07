@@ -18,7 +18,6 @@
 TestRailList Module
 """
 import operator
-
 from .testrailobject import TestRailBase
 
 

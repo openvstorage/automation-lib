@@ -15,7 +15,6 @@
 # but WITHOUT ANY WARRANTY of any kind.
 from ovs.extensions.generic.logger import Logger
 from ovs_extensions.generic.toolbox import ExtensionsToolbox
-
 from ..helpers.storagedriver import StoragedriverHelper
 from ..helpers.vpool import VPoolHelper
 

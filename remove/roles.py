@@ -13,10 +13,10 @@
 #
 # Open vStorage is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY of any kind.
+from subprocess import check_output
 from ovs.extensions.generic.logger import Logger
-from ovs.extensions.generic.sshclient import SSHClient
 from ovs.extensions.generic.system import System
-
+from ovs.extensions.generic.sshclient import SSHClient
 from ..helpers.ci_constants import CIConstants
 from ..helpers.fstab import FstabHelper
 from ..helpers.storagerouter import StoragerouterHelper

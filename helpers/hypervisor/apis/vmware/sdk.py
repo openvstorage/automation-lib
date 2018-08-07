@@ -16,16 +16,15 @@
 This module contains all code for using the VMware SOAP API/SDK
 """
 
-import os
-import re
-import shutil
 from time import sleep
-
-from ovs.extensions.generic.logger import Logger
-from suds.cache import ObjectCache
+import re
+import os
+import shutil
 from suds.client import Client, WebFault
-from suds.plugin import MessagePlugin
+from suds.cache import ObjectCache
 from suds.sudsobject import Property
+from suds.plugin import MessagePlugin
+from ovs.extensions.generic.logger import Logger
 
 logger = Logger('helpers-vmware_sdk')
 
