@@ -107,7 +107,6 @@ class VDiskHelper(CIConstants):
             raise RuntimeError("Did not find snapshot with guid `{0}` on vdisk `{1}` on vpool `{2}`"
                                .format(snapshot_guid, vdisk_name, vpool_name))
 
-
     @classmethod
     def get_config_params(cls, vdisk_name, vpool_name, timeout=GET_CONFIG_PARAMS_TIMEOUT, *args, **kwargs):
         """
@@ -145,7 +144,6 @@ class VDiskHelper(CIConstants):
             VDiskHelper.LOGGER.info("Setting config vDisk `{0}` should have succeeded".format(vdisk_name))
             return task_result[1]
 
-
     @classmethod
     def scrub_vdisk(cls, vdisk_guid, timeout=15 * 60, wait=True, *args, **kwargs):
         """
@@ -156,7 +154,7 @@ class VDiskHelper(CIConstants):
         :type timeout: int
         :param wait: wait for task to finish or not
         :type wait: bool
-        :return: 
+        :return:
         """
         task_guid = cls.api.post(api='/vdisks/{0}/scrub/'.format(vdisk_guid), data={})
         if wait is True:
@@ -170,3 +168,24 @@ class VDiskHelper(CIConstants):
                 return task_result[1]
         else:
             return task_guid
+
+    @classmethod
+    def delete_vdisk(cls, vdisk_guid, timeout=GET_CONFIG_PARAMS_TIMEOUT):
+        """
+        Delete a specific vdisk
+        :param vdisk_guid: guid of the vdisk to delete
+        :type vdisk_guid: str
+        :param timeout: time to wait for the task to complete
+        :type timeout: int
+        :return: bool
+        """
+        task_guid = cls.api.delete(api='/vdisks/{0}'.format(vdisk_guid))
+        task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
+
+        if not task_result[0]:
+            error_msg = "Deleting of vDisk `{0}` has failed with error {1}".format(vdisk_guid, task_result[1])
+            VDiskHelper.LOGGER.error(error_msg)
+            raise RuntimeError(error_msg)
+        else:
+            VDiskHelper.LOGGER.info("Deleting of vDisk `{0}` should have succeeded".format(vdisk_guid))
+            return True

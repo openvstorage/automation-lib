@@ -180,7 +180,7 @@ class BackendHelper(CIConstants):
         """
         Fetches preset by albabackend_guid
 
-        :param preset_name: name of a existing preset
+        :param preset_name: name of an existing preset
         :type preset_name: str
         :param albabackend_name: name of a existing alba backend
         :type albabackend_name: str

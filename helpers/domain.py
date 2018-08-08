@@ -1,6 +1,9 @@
 # Copyright (C) 2016 iNuron NV
 #
 # This file is part of Open vStorage Open Source Edition (OSE),
+# Copyright (C) 2016 iNuron NV
+#
+# This file is part of Open vStorage Open Source Edition (OSE),
 # as available from
 #
 #      http://www.openvstorage.org and
@@ -109,4 +112,3 @@ class DomainHelper(object):
         :rtype: list
         """
         return [storagedriver for storagedriver in StorageDriverList.get_storagedrivers() if domain_guid in storagedriver.storagerouter.regular_domains]
-

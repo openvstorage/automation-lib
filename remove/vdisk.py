@@ -36,7 +36,7 @@ class VDiskRemover(CIConstants):
         Remove many vdisks at once. Will keep the parent structure in mind
         :param vdisks: list of vdisks
         :param timeout: seconds to elapse before raising a timeout error (for each volume)
-        :return: 
+        :return:
         """
         removed_guids = []
         for vdisk in vdisks:
@@ -75,7 +75,7 @@ class VDiskRemover(CIConstants):
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Deleting snapshot `{0}` for vdisk `{1}` has failed".format(snapshot_guid, vdisk_name)
+            error_msg = "Task `{0}`: deleting snapshot `{1}` for vdisk `{2}` has failed".format(task_guid, snapshot_guid, vdisk_name)
             VDiskRemover.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
@@ -97,11 +97,11 @@ class VDiskRemover(CIConstants):
         task_guid = cls.api.post(api='vdisks/{0}/delete'.format(vdisk_guid))
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
         if not task_result[0]:
-            error_msg = "Deleting vDisk `{0}` has failed".format(vdisk_guid)
+            error_msg = "Task `{0}`: deleting vDisk `{1}` has failed".format(task_guid, vdisk_guid)
             VDiskRemover.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            VDiskRemover.LOGGER.info("Deleting vDisk `{0}` should have succeeded".format(vdisk_guid))
+            VDiskRemover.LOGGER.info("Task `{0}`: deleting vDisk `{1}` should have succeeded".format(task_guid, vdisk_guid))
             return True
 
     @classmethod
@@ -139,7 +139,7 @@ class VDiskRemover(CIConstants):
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Deleting vTemplate `{0}` has failed".format(vdisk_name)
+            error_msg = "Task `{0}`: deleting vTemplate `{1}` has failed".format(task_guid, vdisk_name)
             VDiskRemover.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:

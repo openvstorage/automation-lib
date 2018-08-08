@@ -18,12 +18,12 @@ from ovs.extensions.generic.logger import Logger
 from ..helpers.albanode import AlbaNodeHelper
 from ..helpers.backend import BackendHelper
 from ..helpers.ci_constants import CIConstants
-from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, check_preset, \
+from ..helpers.exceptions import PresetNotFoundError
+from ..validate.decorators import required_roles, required_backend, required_preset, check_backend, \
     check_linked_backend, filter_osds
 
 
 class BackendSetup(CIConstants):
-
     LOGGER = Logger("setup-ci_backend_setup")
     LOCAL_STACK_SYNC = 30
     BACKEND_TIMEOUT = 15
@@ -41,7 +41,8 @@ class BackendSetup(CIConstants):
     @classmethod
     @check_backend
     @required_roles(['DB'])
-    def add_backend(cls, backend_name, scaling='LOCAL', timeout=BACKEND_TIMEOUT, max_tries=MAX_BACKEND_TRIES, *args, **kwargs):
+    def add_backend(cls, backend_name, scaling='LOCAL', timeout=BACKEND_TIMEOUT, max_tries=MAX_BACKEND_TRIES, *args,
+                    **kwargs):
         """
         Add a new backend
         :param backend_name: Name of the Backend to add
@@ -91,11 +92,11 @@ class BackendSetup(CIConstants):
                 time.sleep(timeout)
 
         BackendSetup.LOGGER.error("Creation of Backend `{0}` and scaling `{1}` failed with status: {2}!"
-                                  .format(backend_name, scaling, BackendHelper.get_backend_status_by_name(backend_name)))
+                                  .format(backend_name, scaling,
+                                          BackendHelper.get_backend_status_by_name(backend_name)))
         return False
 
     @classmethod
-    @check_preset
     @required_backend
     def add_preset(cls, albabackend_name, preset_details, timeout=ADD_PRESET_TIMEOUT, *args, **kwargs):
         """
@@ -120,6 +121,15 @@ class BackendSetup(CIConstants):
         :return: success or not
         :rtype: bool
         """
+
+        # CHECK PRESET
+        try:
+            BackendHelper.get_preset_by_albabackend(preset_details['name'], albabackend_name)
+            BackendSetup.LOGGER.info("Preset `{0}` already exists.".format(preset_details['name']))
+            return True
+        except PresetNotFoundError:
+            pass
+
         # BUILD_PRESET
         preset = {'name': preset_details['name'],
                   'policies': preset_details['policies'],
@@ -136,11 +146,14 @@ class BackendSetup(CIConstants):
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Preset `{0}` has failed to create on backend `{1}`".format(preset_details['name'], albabackend_name)
+            error_msg = "Preset `{0}` has failed to create on backend `{1}`".format(preset_details['name'],
+                                                                                    albabackend_name)
             BackendSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
-            BackendSetup.LOGGER.info("Creation of preset `{0}` should have succeeded on backend `{1}`".format(preset_details['name'], albabackend_name))
+            BackendSetup.LOGGER.info(
+                "Creation of preset `{0}` should have succeeded on backend `{1}`".format(preset_details['name'],
+                                                                                         albabackend_name))
             return True
 
     @classmethod
@@ -169,7 +182,7 @@ class BackendSetup(CIConstants):
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Preset `{0}` has failed to update with policies `{1}` on backend `{2}`"\
+            error_msg = "Preset `{0}` has failed to update with policies `{1}` on backend `{2}`" \
                 .format(preset_name, policies, albabackend_name)
             BackendSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
@@ -184,22 +197,26 @@ class BackendSetup(CIConstants):
     def add_asds(cls, target, disks, albabackend_name, claim_retries=MAX_CLAIM_RETRIES, *args, **kwargs):
         """
         Initialize and claim a new asds on given disks
+
         :param target: target to add asds too
         :type target: str
         :param disks: dict with diskname as key and amount of osds as value
         :type disks: dict
-        :param albabackend_name: Name of the AlbaBackend to configure
-        :type albabackend_name: str
         :param claim_retries: Maximum amount of claim retries
         :type claim_retries: int
+        :param albabackend_name: Name of the AlbaBackend to configure
+        :type albabackend_name: str
         :return: preset_name
         :rtype: str
         """
-        BackendSetup._discover_and_register_nodes()  # Make sure all backends are registered
-        node_mapping = AlbaNodeHelper._map_alba_nodes()  # target is a node
+        # Make sure all backends are registered
+        BackendSetup._discover_and_register_nodes(cls.api)
+        # target is a node
+        node_mapping = AlbaNodeHelper._map_alba_nodes(cls.api)
         alba_backend_guid = BackendHelper.get_alba_backend_guid_by_name(albabackend_name)
 
-        backend_info = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name)
+        local_stack = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=cls.api)
+        backend_info = BackendHelper.get_backend_local_stack(albabackend_name=albabackend_name, api=cls.api)
         local_stack = backend_info['local_stack']
         node_slot_information = {}
         for disk, amount_of_osds in disks.iteritems():
@@ -211,19 +228,20 @@ class BackendSetup(CIConstants):
                 # Check if the alba_node_id has the disk
                 if slot_id in node_info:
                     slot_information = node_slot_information.get(alba_node_guid, [])
-                    BackendSetup.LOGGER.info('Adding {0} to disk queue for providing {1} osds.'.format(slot_id, amount_of_osds))
+                    BackendSetup.LOGGER.info(
+                        'Adding {0} to disk queue for providing {1} osds.'.format(slot_id, amount_of_osds))
                     slot_information.append({'count': amount_of_osds,
                                              'slot_id': slot_id,
                                              'osd_type': 'ASD',
                                              'alba_backend_guid': alba_backend_guid})
-
                     node_slot_information[alba_node_guid] = slot_information
         for alba_node_guid, slot_information in node_slot_information.iteritems():
             BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(slot_information, alba_node_guid))
-            BackendSetup._fill_slots(alba_node_guid=alba_node_guid, slot_information=slot_information)
+            BackendSetup._fill_slots(alba_node_guid=alba_node_guid, slot_information=slot_information, api=cls.api)
 
         # Local stack should sync with the new disks
-        BackendSetup.LOGGER.info('Sleeping for {0} seconds to let local stack sync.'.format(BackendSetup.LOCAL_STACK_SYNC))
+        BackendSetup.LOGGER.info(
+            'Sleeping for {0} seconds to let local stack sync.'.format(BackendSetup.LOCAL_STACK_SYNC))
         time.sleep(BackendSetup.LOCAL_STACK_SYNC)
 
         # Restarting iteration to avoid too many local stack calls:
@@ -244,9 +262,13 @@ class BackendSetup(CIConstants):
                     while osd_info['status'] not in ['available', 'ok']:
                         current_retry += 1
                         BackendSetup.LOGGER.info('ASD {0} for Alba node {1} was not available. Waiting 5 seconds '
-                                                 'to retry (currently {2} retries left).'.format(osd_id, alba_node_id, claim_retries - current_retry))
+                                                 'to retry (currently {2} retries left).'.format(osd_id, alba_node_id,
+                                                                                                 claim_retries - current_retry))
                         if current_retry >= claim_retries:
-                            raise RuntimeError('ASD {0} for Alba node {1} did come available after {2} seconds'.format(osd_id, alba_node_id, current_retry * 5))
+                            raise RuntimeError(
+                                'ASD {0} for Alba node {1} did come available after {2} seconds'.format(osd_id,
+                                                                                                        alba_node_id,
+                                                                                                        current_retry * 5))
                         time.sleep(5)
                         albanode.invalidate_dynamics('stack')
                         osd_info = albanode.stack[slot_id][osd_id]
@@ -259,7 +281,8 @@ class BackendSetup(CIConstants):
                     node_osds_to_claim[alba_node_guid] = osds_to_claim
         for alba_node_guid, osds_to_claim in node_osds_to_claim.iteritems():
             BackendSetup.LOGGER.info('Posting {0} for alba_node_guid {1}'.format(osds_to_claim, alba_node_guid))
-            BackendSetup._claim_osds(alba_backend_name=albabackend_name, alba_node_guid=alba_node_guid, osds=osds_to_claim)
+            BackendSetup._claim_osds(alba_backend_name=albabackend_name, alba_node_guid=alba_node_guid,
+                                     osds=osds_to_claim)
 
     @classmethod
     def _discover_and_register_nodes(cls, *args, **kwargs):
@@ -311,9 +334,9 @@ class BackendSetup(CIConstants):
         options = {
             'contents': 'local_stack',
         }
-        return cls.api.get(api='/alba/backends/{0}/'.format(BackendHelper.get_alba_backend_guid_by_name(alba_backend_name)),
-                       params={'queryparams': options}
-                       )
+        return cls.api.get(
+            api='/alba/backends/{0}/'.format(BackendHelper.get_alba_backend_guid_by_name(alba_backend_name)),
+            params={'queryparams': options})
 
     @classmethod
     def _fill_slots(cls, alba_node_guid, slot_information, timeout=INITIALIZE_DISK_TIMEOUT, *args, **kwargs):
@@ -327,6 +350,7 @@ class BackendSetup(CIConstants):
         :return:
         """
         data = {'slot_information': slot_information}
+
         task_guid = cls.api.post(
             api='/alba/nodes/{0}/fill_slots/'.format(alba_node_guid),
             data=data
@@ -341,7 +365,7 @@ class BackendSetup(CIConstants):
             return task_result[0]
 
     @classmethod
-    def _claim_osds(cls, alba_backend_name, alba_node_guid, osds, timeout=CLAIM_ASD_TIMEOUT, *args, **kwargs):
+    def _claim_osds(cls, alba_backend_name, alba_node_guid, osds, timeout=CLAIM_ASD_TIMEOUT):
         """
         Claims a asd
         :param alba_backend_name: backend name
@@ -363,7 +387,9 @@ class BackendSetup(CIConstants):
         task_result = cls.api.wait_for_task(task_id=task_guid, timeout=timeout)
 
         if not task_result[0]:
-            error_msg = "Claim ASD `{0}` for alba backend `{1}` has failed with error '{2}'".format(osds, alba_backend_name, task_result[1])
+            error_msg = "Claim ASD `{0}` for alba backend `{1}` has failed with error '{2}'".format(osds,
+                                                                                                    alba_backend_name,
+                                                                                                    task_result[1])
             BackendSetup.LOGGER.error(error_msg)
             raise RuntimeError(error_msg)
         else:
@@ -374,7 +400,8 @@ class BackendSetup(CIConstants):
     @required_preset
     @required_backend
     @check_linked_backend
-    def link_backend(cls, albabackend_name, globalbackend_name, preset_name, timeout=LINK_BACKEND_TIMEOUT, *args, **kwargs):
+    def link_backend(cls, albabackend_name, globalbackend_name, preset_name, timeout=LINK_BACKEND_TIMEOUT, *args,
+                     **kwargs):
         """
         Link a LOCAL backend to a GLOBAL backend
 
@@ -392,20 +419,20 @@ class BackendSetup(CIConstants):
         local_albabackend = BackendHelper.get_albabackend_by_name(albabackend_name)
 
         data = {
-           "metadata": {
-              "backend_connection_info": {
-                 "host": "",
-                 "port": 80,
-                 "username": "",
-                 "password": ""
-              },
-              "backend_info": {
-                 "linked_guid": local_albabackend.guid,
-                 "linked_name": local_albabackend.name,
-                 "linked_preset": preset_name,
-                 "linked_alba_id": local_albabackend.alba_id
-              }
-           }
+            "metadata": {
+                "backend_connection_info": {
+                    "host": "",
+                    "port": 80,
+                    "username": "",
+                    "password": ""
+                },
+                "backend_info": {
+                    "linked_guid": local_albabackend.guid,
+                    "linked_name": local_albabackend.name,
+                    "linked_preset": preset_name,
+                    "linked_alba_id": local_albabackend.alba_id
+                }
+            }
         }
         task_guid = cls.api.post(
             api='/alba/backends/{0}/link_alba_backends'
